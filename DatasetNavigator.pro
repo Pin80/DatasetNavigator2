@@ -42,4 +42,5 @@ HEADERS += \
     tzmqipc.h \
     zhelpers.h
 
-DISTFILES +=
+DISTFILES += \
+    zmq_mask_tool.ipynb
