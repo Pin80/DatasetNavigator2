@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/TFileDialog.qml</file>
+        <file>qml/TButton.qml</file>
+        <file>qml/TMsgDialog.qml</file>
+        <file>qml/TLineEdit.qml</file>
+    </qresource>
+</RCC>
