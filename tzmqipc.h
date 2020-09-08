@@ -10,6 +10,7 @@
 #include <zmq.hpp>
 #include <zhelpers.h>
 
+//QObject has neither a copy constructor nor an assignment operator.
 class TZMQIPC : public QObject
 {
     Q_OBJECT
