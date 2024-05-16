@@ -48,6 +48,7 @@ HEADERS += \
     zmqtopy.h
 
 DISTFILES += \
+    README.md \
     TODO \
     draft.txt \
     licence.txt \
