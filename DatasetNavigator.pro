@@ -49,5 +49,6 @@ HEADERS += \
 
 DISTFILES += \
     draft.txt \
+    licence.txt \
     settings.json \
     zmq_mask_tool.ipynb
