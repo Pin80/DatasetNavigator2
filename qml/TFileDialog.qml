@@ -9,7 +9,7 @@ FileDialog {
     id: fileDialog;
     title: "Please choose a file";
     //nameFilters: ["Image Files (*.jpg *.png *.gif)"];
-    selectFolder:true
+    selectFolder: true
     selectMultiple: false
     visible: false
 }

@@ -5,27 +5,18 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel 2.0
 
-Button {
+RoundButton {
     id: custom_button
-    Layout.alignment: Qt.AlignRight
-    Layout.fillWidth: true
-    Layout.preferredHeight: 40
-    Layout.preferredWidth: 40
     text: "Button"
+    radius: 10
+    property alias grad: rect.gradient
     background: Rectangle {
+        id: rect
          implicitWidth: 10
          implicitHeight: 10
-         color: "gray"
+         color: "green"
          border.color: custom_button.down ? "#FA8072" : "#696969"
          border.width: 3
          radius: 10
-         gradient: Gradient {
-             GradientStop {
-                 position: 0 ; color: custom_button.pressed ? "#ccc" : "#eee"
-             }
-             GradientStop {
-                 position: 1 ; color: custom_button.pressed ? "#aaa" : "#ccc"
-             }
-         }
      }
 }

@@ -5,10 +5,11 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel 2.0
 
-MessageDialog {
-    id: messageDialog
-    title: "Error!"
-    text: "Operation is failure"
-    icon: StandardIcon.Critical
-    Component.onCompleted: visible = false
+RoundButton {
+    id: custom_toggle
+    text: "To"
+    radius: 10
+    flat: false
+
+    //Layout.preferredWidth: parent.width * 0.2
 }

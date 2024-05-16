@@ -1,9 +1,9 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls.Styles  1.4
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
-import Qt.labs.folderlistmodel 2.0
+import Qt.labs.folderlistmodel  2.0
 import ipc.zmq 1.0
 
 ApplicationWindow {
@@ -12,273 +12,127 @@ ApplicationWindow {
     width: 320
     height: 480
     color: "brown"
-    signal maskboxChanged();
     title: qsTr("Dataset Navigator")
-    ColumnLayout{
-        spacing: 1
+    //console.log(folder)
+    property bool toggle_im_state: true
+    signal maskboxChanged();
+    onClosing: {
+        Tipcagent.closeWindow()
+    }
+    ColumnLayout {
+        spacing: 2
+        anchors.margins: 2
         anchors.fill: parent
-        anchors.margins: 10
-        FolderListModel {
-            id: folderMaskModel
-            //nameFilters: ["*.*"]
-            nameFilters: ["*.bmp", "*.jpg", "*.png", "*.gif"]
-            folder: "~/"
-            showDirs: true
-        }
-        FolderListModel {
-            id: folderModel
-            //nameFilters: ["*.*"]
-            nameFilters: ["*.bmp", "*.jpg", "*.png", "*.gif"]
-            folder: "~/"
-            showDirs: false
-        }
-        ListView {
-            id: lview_mask
-            Component {
-                id: fileDelegate_mask
-                Rectangle{
-                    id: itembox_mask
-                    visible: false
-                    property string fname: fileName
-                    MouseArea{
-                        anchors.fill: parent
-                    }
-                }
-            }
-            model: folderMaskModel
-            delegate: fileDelegate_mask
-            onCountChanged: {
-                maskboxChanged()
-            }
-        }
-
-        TButton {
-            id: btn_selectdir
-            text: "Choose Image Folder"
-            TFileDialog {
-                id: dirdialog_orig
-                onAccepted: {
-                    //console.log("btn_selectdir");
-                    folderModel.folder = folder
-                    dirdialog_orig.close()
-                    flickable.focus = true
-                }
-            }
-            onClicked: {
-                dirdialog_orig.title = "Please choose a image folder"
-                dirdialog_orig.folder = "/home/user/MySoftware/foreign code/netology_JN/Diplom/"
-                dirdialog_orig.open()
-                //console.log("Button Pressed. Entered text: ");
-            }
-        }
-        TButton {
-            id: btn_selectmdir
-            text: "Choose Mask Image Folder"
-            TFileDialog {
-                id: dirmdialog
-                onAccepted: {
-                    //console.log("btn_selectdir");
-                    folderModel.folder = dirdialog_orig.folder
-                    folderMaskModel.folder = folder
-
-                    console.log(folder)
-                    dirmdialog.close()
-                }
-            }
-            onClicked: {
-                dirmdialog.title = "Please choose a mask folder"
-                //dirmdialog.folder = "/home/user/MySoftware/foreign code/netology_JN/Diplom/"
-                dirmdialog.open()
-                //console.log("Button Pressed. Entered text: ");
-            }
-        }
-        TButton {
-            id: btn_bind
-            property bool isBound: false
-            text: "Bind Port"
-            TMsgDialog {
-                id : errordialog
-                onAccepted: {
-                    //console.log("btn_bind")
-                    //Qt.quit()
-                }
-            }
-            function onUnboundSocket() {
-                //console.log("btn changed")
-                btn_bind.isBound = false
-                btn_bind.text = "Bind Port"
-                btn_bind.enabled = true
-                mainapp.update()
-                sbartxt.text = "socket is unbound"
-            }
-
-            function onBoundSocket() {
-                //console.log("btn changed")
-                btn_bind.isBound = true
-                btn_bind.text = "Unbind Port"
-                btn_bind.enabled = true
-                mainapp.update()
-                sbartxt.text = "socket is bound"
-            }
-            onClicked: {
-                //console.log("Button Pressed.");
-                var result = false
-                enabled = false
-                if (isBound) {
-                    result = Tipcagent.unbindSocket()
-                    if (result) {
-                       // Do Nothing
-                    }
-                    else
-                    {
-                        errordialog.open()
-                        enabled = true
-                    }
-                }
-                else {
-                    result = Tipcagent.bindSocket(urledit.text)
-                    if (result) {
-                        // Do Nothing
-                    }
-                    else
-                    {
-                        errordialog.open()
-                        enabled = true
-                    }
-                }
-            }
-        }
-        TLineEdit{
-            id: urledit
-            text: "127.0.0.1:5561"
-        }
-        TLineEdit{
-            id: prefixedit
-            color: "lightgreen"
-            text: "mask_"
-        }
-        Rectangle {
-            Layout.alignment: Qt.AlignRight
-            Layout.fillHeight: true
+        TFolderButtonPanel {
+            id: fldbtnpanel
             Layout.fillWidth: true
-            color: "green"
-            border.color: "black"
-            border.width: 2
-            radius: 10
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             Layout.preferredHeight: 40
             Layout.preferredWidth: 40
-                ScrollView {
-                    id: flickable
-                    anchors.fill: parent
-                    anchors.rightMargin: 20
-                    focus: true
-                    ScrollBar.vertical: ScrollBar {
-                        id: scrollBar
-                        parent: flickable.parent
-                        anchors.top: flickable.top
-                        anchors.left: flickable.right
-                        anchors.bottom: flickable.bottom
-                        width: 20
-                    }
-                    ListView {
-                        id: lview
-                        anchors.fill: parent
-                        anchors.topMargin: 5
-                        anchors.leftMargin: 5
-                        clip: true
+            Layout.maximumHeight: 120
+            Layout.minimumHeight: 60
+            onPanel_folderChanged: {
+                //folderlistpanel.ifolder = panel_folder
+                folderlistpanel.modelfolder = panel_folder
+                Tipcagent.folder = panel_folder
+            }
+            onPanel_maskfolderChanged: {
+                folderlistpanel.maskfolder = panel_maskfolder
+                Tipcagent.maskfolder = panel_folder
+                foldermasklistpanel.modelfolder = panel_maskfolder
+            }
+            onUpdatelists: {
+                console.log("update")
+                var ifolder = folderlistpanel.modelfolder
+                var mfolder = foldermasklistpanel.modelfolder
+                folderlistpanel.modelfolder = "./none"
+                folderlistpanel.modelfolder = ifolder
+            }
+        }
+        TTogglePanel {
+            id: togglepanel
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
+            Layout.preferredHeight: 20
+            Layout.preferredWidth: 40
+            Layout.maximumHeight: 30
+            Layout.minimumHeight: 30
+            onToggle_imChanged: {
+                toggle_im_state = toggle_im
+            }
+            onSig_bind: { 
+                Tipcagent.sig_bindSocket()
+            }
+            onSig_unbind: {
+                Tipcagent.sig_unbindSocket()
+            }
 
-                        highlightFollowsCurrentItem: true
-                        Keys.onUpPressed: lview.decrementCurrentIndex() //перемещение стрелками
-                        Keys.onDownPressed: lview.incrementCurrentIndex() //перемещение стрелками
-                        property bool currentMaskFound: true
-                        Component {
-                            id: fileDelegate
-                            Rectangle{
-                                id: itembox
-                                property string fname: fileName
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.margins: 0
-                                height: 25
-                                border.color: "blue"
-                                border.width: 1
-                                property string calcincolor: (index%2 == 0)? "lightblue": "lightgreen"
-                                color: ListView.isCurrentItem ? "yellow" : calcincolor
-                                MouseArea{
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        lview.currentIndex = index
-                                        btn_bind.enabled = true
-                                    }
-                                    onDoubleClicked: {
-                                        Tipcagent.sendString(fname,
-                                                             folderModel.folder,
-                                                             dirmdialog.folder,
-                                                             prefixedit.text,
-                                                             "photo",
-                                                             maskbox.checked);
-                                        //console.log("fname")
-                                    }
-                                }
-                                RowLayout{
-                                    id: litem_rlay
-                                    anchors.fill: parent
+            function onUnboundSocket(result) {
+                if (result)
+                    isBound = false
+            }
 
-                                    //anchors.right: parent.right
-                                    //anchors.margins: 10
-                                    Text {
-                                        id: litem_text
-                                        Layout.leftMargin: 10
-                                        font.pointSize: 14
-                                        Layout.alignment: Qt.AlignVCenter
-                                        Layout.fillHeight: true
-                                        Layout.fillWidth: true
-                                        wrapMode: Text.WordWrap
-                                        elide: Text.ElideRight
-                                        text: fname
-                                    }
-                                    CheckBox {
-                                        id: maskbox
-                                        property string fnameC: fname
-                                        Layout.alignment: Qt.AlignVCenter
-                                        Layout.rightMargin: 5
-                                        Layout.fillHeight: true
-                                        indicator.width: 16
-                                        indicator.height: 16
-                                        checked: Tipcagent.foundMaskName(fileName,
-                                                               dirmdialog.folder,
-                                                               prefixedit.text,
-                                                               "photo")
-                                        signal mchanged();
-                                        function onMchanged()
-                                        {
-                                            if (typeof fname != "undefined")
-                                            {
-                                                checked = Tipcagent.foundMaskName(fname,
-                                                                                  dirmdialog.folder,
-                                                                                  prefixedit.text,
-                                                                                  "photo")
-                                            }
-                                            //console.log("+")
-                                        }
-                                        Component.onCompleted: {
-                                            mainapp.maskboxChanged.connect(maskbox.onMchanged)
-                                        }
-                                    }
-                                }
-                            }
+            function onBoundSocket(result) {
+                if (result)
+                    isBound = true
+            }
+            Connections {
+                target: Tipcagent
+                onBoundSocket: {
+                    console.log("qml connections slot is bound")
+                    togglepanel.onBoundSocket(result)
+                }
+            }
+            Connections {
+                target: Tipcagent
+                onUnboundSocket: {
+                    console.log("qml connections slot is unbound")
+                    togglepanel.onUnboundSocket(result)
+                }
+            }
+            Connections {
+                target: Tipcagent
+                onRecvString: {
+                    var res = folderlistpanel.imodel.indexOf(result)
+                    if (res !== -1) {
+                        if (res === folderlistpanel.ilview.currentIndex)
+                        {
+                            console.log("marked for recv:", result)
+                            folderlistpanel.ilview.currentItem.currchecked = true
                         }
-                        model: folderModel
-                        delegate: fileDelegate
                     }
-                } // ScrollView
-        } //Rectangle
+                }
+            }
+        }
+        TFolderListPanel {
+            id: folderlistpanel
+            objectName: "folderlistpanel"
+            visible: toggle_im_state
+            Layout.alignment: Qt.AlignTop
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            Layout.preferredWidth: 40
+            property var modelmask: foldermasklistpanel.mmodel
+        }
+        TFolderMaskListPanel {
+            id: foldermasklistpanel
+            visible: !toggle_im_state
+            Layout.alignment: Qt.AlignTop
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            Layout.preferredWidth: 40
+        }
+
         Rectangle {
             id : statusbar
-            Layout.alignment: Qt.AlignRight
+            Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
             Layout.preferredHeight: 30
-            Layout.preferredWidth: 40
+            Layout.preferredWidth: 20
             border.color: "black"
             border.width: 1
             color: "gray"
@@ -294,12 +148,4 @@ ApplicationWindow {
             }
         }
     } //ColumnLayout
-    Connections {
-        target: Tipcagent
-        onBoundSocket: btn_bind.onBoundSocket()
-    }
-    Connections {
-        target: Tipcagent
-        onUnboundSocket: btn_bind.onUnboundSocket()
-    }
 } //ApplicationWindow

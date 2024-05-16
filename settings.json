@@ -1,0 +1,15 @@
+{
+        "zmqurlcp" : "tcp://127.0.0.1:5562",
+        "zmqurlpc" : "tcp://127.0.0.1:5561",
+	"default_width" : 640,
+        "default_height" : 320,
+        "manual" : "manual.html",
+        "scolor" : [0, 0, 255],
+        "fcolor" : [0, 255, 0],
+        "ccolor" : [255, 0, 0],
+        "lcolor" : [0, 255, 255],
+        "suffix" : "photo",
+        "mask_prefix" : "mask_",
+        "mask_subfolder" : "masks",
+        "log_filename" : "annottool.log"
+}
