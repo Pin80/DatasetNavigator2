@@ -48,6 +48,7 @@ HEADERS += \
     zmqtopy.h
 
 DISTFILES += \
+    TODO \
     draft.txt \
     licence.txt \
     settings.json \
