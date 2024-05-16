@@ -1,3 +1,4 @@
+#NEW Version
 QT += qml quick
 QT += quickcontrols2
 CONFIG += c++11
