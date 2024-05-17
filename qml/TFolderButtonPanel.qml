@@ -10,6 +10,7 @@ Item {
     id: fldButtonPanel
     property string panel_folder: ""
     property string panel_maskfolder: ""
+    property int fldButtonPanrlHeight: 120
     signal updatelists();
     ColumnLayout {
         anchors.fill: parent
@@ -21,9 +22,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
-            //bcolor: "#a8abe8"
+            Layout.preferredHeight: fldButtonPanrlHeight*0.35
             TFileDialog {
                 id: dirdialog_orig
                 onAccepted: {
@@ -70,8 +69,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
+            Layout.preferredHeight: fldButtonPanrlHeight*0.35
             TFileDialog {
                 id: dir_mdialogM
                 onAccepted: {
@@ -116,8 +114,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
+            Layout.preferredHeight: fldButtonPanrlHeight*0.3
             grad: grad3
             MouseArea {
                 Gradient {

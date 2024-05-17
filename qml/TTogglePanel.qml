@@ -6,6 +6,7 @@ import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
 import QtQuick.Controls.Material 2.2
 import QtQuick.Templates 2.2 as T
+import QtQuick.Window 2.12
 
 Item {
     id: togglepanel
@@ -13,17 +14,20 @@ Item {
     property bool isBound: false
     signal sig_bind()
     signal sig_unbind()
+    property real scalekx: (Screen.desktopAvailableWidth/1920)
+    property real scaleky: (Screen.desktopAvailableHeight/1080)
     RowLayout {
         anchors.fill: parent
         spacing: 2
+        anchors.margins: 2
         Switch {
             id: toggle_bind2
             text: qsTr("Connect")
+            font.pointSize: scaleky*14
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 30
-            Layout.preferredWidth: 50
+            Layout.preferredWidth: togglepanel.width*0.6
             checked: isBound
             TMsgDialog {
                 id : errordialog2
@@ -32,7 +36,7 @@ Item {
             indicator: Rectangle {
                 id: indicswitch
                 implicitWidth: 50
-                implicitHeight: 26
+                implicitHeight: togglepanel.height - 2
                 property color btn_color : "white"
                 x: toggle_bind2.leftPadding
                 y: parent.height / 2 - height / 2
@@ -43,8 +47,8 @@ Item {
                 Rectangle {
                     id: indicswitchbtn
                     x: toggle_bind2.checked ? parent.width - width : 0
-                    width: 26
-                    height: 26
+                    width: togglepanel.height - 2
+                    height: togglepanel.height - 2
                     radius: 13
                     border.color: toggle_bind2.checked ? (toggle_bind2.down ? "#17a81a" : "#21be2b") : "#999999"
                 }
@@ -89,8 +93,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 30
-            Layout.preferredWidth: 20
+            Layout.preferredWidth: togglepanel.width*0.2
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
@@ -122,8 +125,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredHeight: 30
-            Layout.preferredWidth: 20
+            Layout.preferredWidth: togglepanel.width*0.2
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true

@@ -5,14 +5,18 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
 import ipc.zmq 1.0
+import QtQuick.Window 2.12
 
 ApplicationWindow {
     id: mainapp
     visible: true
-    width: 320
-    height: 480
+    property real scalekx: (Screen.desktopAvailableWidth/1920)
+    property real scaleky: (Screen.desktopAvailableHeight/1080)
+    width: scalekx*320
+    height: scaleky*480
     color: "brown"
     title: qsTr("Dataset Navigator")
+    font.pixelSize: scaleky*14
     //console.log(folder)
     property bool toggle_im_state: true
     signal maskboxChanged();
@@ -28,12 +32,9 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
-            Layout.maximumHeight: 120
-            Layout.minimumHeight: 60
+            Layout.preferredHeight: scaleky*60
+            Layout.maximumHeight: scaleky*120
             onPanel_folderChanged: {
-                //folderlistpanel.ifolder = panel_folder
                 folderlistpanel.modelfolder = panel_folder
                 Tipcagent.folder = panel_folder
             }
@@ -55,10 +56,9 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
-            Layout.preferredHeight: 20
-            Layout.preferredWidth: 40
-            Layout.maximumHeight: 30
-            Layout.minimumHeight: 30
+            Layout.preferredHeight: scaleky*20
+            Layout.maximumHeight: scaleky*30
+            Layout.minimumHeight: scaleky*30
             onToggle_imChanged: {
                 toggle_im_state = toggle_im
             }
@@ -113,8 +113,7 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
+            Layout.preferredHeight: scaleky*40
             property var modelmask: foldermasklistpanel.mmodel
         }
         TFolderMaskListPanel {
@@ -123,26 +122,25 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            Layout.preferredWidth: 40
+            Layout.preferredHeight: scaleky*40
         }
 
         Rectangle {
             id : statusbar
             Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            Layout.preferredWidth: 20
+            Layout.preferredHeight: scaleky*30
             border.color: "black"
             border.width: 1
             color: "gray"
             Text {
                 id: sbartxt
                 anchors.fill: parent
-                anchors.margins: 5
+                anchors.bottomMargin: 5
+                anchors.leftMargin: 5
                 focus: true
                 font.family: "Helvetica"
-                font.pointSize: 14
+                font.pointSize: 14*scaleky
                 text: "socket is unbound"
                 color: "black"
             }

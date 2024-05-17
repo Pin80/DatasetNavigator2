@@ -646,7 +646,7 @@ class Zmq_receiver:
                         pattern = "^.*" + ctx.suffix + "\d+\.(?:jpg|png|jpeg)$"
                         res = re.fullmatch(pattern, bname)
                         if (res):
-                            suffix = bname.split(ctx.suffix)[1]
+                            suffix = ctx.suffix + bname.split(ctx.suffix)[1]
                             self.mask_name = tmppath + "/" + ctx.mfolder + "/" + ctx.mprefix + suffix
                         else:
                             self.mask_name = tmppath + "/" + ctx.mfolder + "/" + ctx.mprefix + bname

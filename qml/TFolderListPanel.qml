@@ -4,6 +4,7 @@ import QtQuick.Controls.Styles  1.4
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.12
+import QtQuick.Window 2.12
 import ipc.zmq 1.0
 
 Rectangle {
@@ -13,8 +14,10 @@ Rectangle {
     border.width: 2
     radius: 10
     signal maskboxChanged();
-    property int imgwidth: 350
-    property int imgheight: 350
+    property real scalekx: (Screen.desktopAvailableWidth/1920)
+    property real scaleky: (Screen.desktopAvailableHeight/1080)
+    property int imgwidth: 350*scalekx
+    property int imgheight: 350*scaleky
     property string imgdialog_title: "intro"
     property string imgdialog_fname: "qrc:///qml/intro.png"
     property string maskfolder: ""
@@ -38,7 +41,7 @@ Rectangle {
     ScrollView {
         id: flickable
         anchors.fill: parent
-        anchors.rightMargin: 20
+        anchors.rightMargin: 20*scalekx
         focus: true
         ScrollBar.vertical: ScrollBar {
             id: scrollBar
@@ -46,7 +49,27 @@ Rectangle {
             anchors.top: flickable.top
             anchors.left: flickable.right
             anchors.bottom: flickable.bottom
-            width: 20
+            width: flickable.anchors.rightMargin
+            //anchors.rightMargin: 10 * AppTheme.scaleValue
+            contentItem: Rectangle {
+                id: polzunok_img
+                implicitWidth: 6
+                color: "brown"
+                radius: 10
+                onHeightChanged: {
+                    height = (height < 20*scalekx)? 20*scalekx:height
+                }
+                MouseArea {
+                    propagateComposedEvents: true
+                    anchors.fill: parent
+                    onWheel:        { wheel.accepted = false; }
+                    onPressed:      { mouse.accepted = false; }
+                    onReleased:     { mouse.accepted = false; }
+                    hoverEnabled: true
+                    onEntered: polzunok_img.color = "pink"
+                    onExited: polzunok_img.color = "brown"
+                }
+            }
         }
         ListView {
             id: lview
@@ -54,7 +77,6 @@ Rectangle {
             anchors.topMargin: 5
             anchors.leftMargin: 5
             clip: true
-
             highlightFollowsCurrentItem: true
             Keys.onUpPressed: lview.decrementCurrentIndex() //перемещение стрелками
             Keys.onDownPressed: lview.incrementCurrentIndex() //перемещение стрелками
@@ -70,7 +92,8 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.margins: 5
-                    height: 25
+                    anchors.rightMargin: 15*(height/25)
+                    height: rectI.scaleky*25
                     border.color: "blue"
                     border.width: 1
                     property string calcincolor: (index%2 == 0)? "lightblue": "lightgreen"
@@ -167,13 +190,10 @@ Rectangle {
                     RowLayout{
                         id: litem_rlay
                         anchors.fill: parent
-
-                        //anchors.right: parent.right
-                        //anchors.margins: 10
                         Text {
                             id: litem_text
-                            Layout.leftMargin: 10
-                            font.pointSize: 14
+                            Layout.leftMargin: font.pointSize
+                            font.pointSize: rectI.scaleky*14
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillHeight: true
                             Layout.fillWidth: true
@@ -183,12 +203,11 @@ Rectangle {
                         }
                         CheckBox {
                             id: maskbox
-                            property string fnameC: delegfname
                             Layout.alignment: Qt.AlignVCenter
                             Layout.rightMargin: 5
                             Layout.fillHeight: true
-                            indicator.width: 16
-                            indicator.height: 16
+                            indicator.width: indicator.height
+                            indicator.height: height - 7
                             function testMask() {
                                 if (typeof modelmask !== "undefined") {
                                         var mname = Tipcagent.getshortMaskName(fileName,  maskfolder)

@@ -9,8 +9,6 @@ Rectangle {
     id: lineedit
     Layout.alignment: Qt.AlignRight
     Layout.fillWidth: true
-    Layout.preferredHeight: 30
-    Layout.preferredWidth: 40
     border.color: "black"
     border.width: 2
     radius: 5

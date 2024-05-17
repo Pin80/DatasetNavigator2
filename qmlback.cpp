@@ -63,14 +63,9 @@ bool init(QQmlApplicationEngine& _engine)
     QString scriptFile =  "annot_tool.py";
 
     QStringList pythonCommandArguments = QStringList() << scriptFile;
-    initstruct.pyprocess->start(program, pythonCommandArguments);
-    initstruct.pyprocess->waitForStarted();
+    //initstruct.pyprocess->start(program, pythonCommandArguments);
+    //initstruct.pyprocess->waitForStarted();
     initstruct.zbackend.reset(new ZMQBackend(urlpc, urlcp));
-    //if (!initstruct.zbackend->startZMQpool())
-    {
-    //    qCritical() << "zmq backend error";
-    //    return false;
-    }
     initstruct.prov.reset( new ColorImageProvider());
     qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
                                       "Tipcagent",
