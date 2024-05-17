@@ -4,7 +4,6 @@
         <file>qml/TFileDialog.qml</file>
         <file>qml/TButton.qml</file>
         <file>qml/TMsgDialog.qml</file>
-        <file>qml/TLineEdit.qml</file>
         <file>qml/TImgDialog.qml</file>
         <file>qml/intro.png</file>
         <file>qml/TToggle.qml</file>
@@ -12,7 +11,6 @@
         <file>qml/TTogglePanel.qml</file>
         <file>qml/TFolderListPanel.qml</file>
         <file>qml/TFolderMaskListPanel.qml</file>
-        <file>qml/Testitem.qml</file>
         <file>qml/mask.jpg</file>
     </qresource>
 </RCC>
