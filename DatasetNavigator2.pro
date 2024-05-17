@@ -2,7 +2,8 @@
 QT += qml quick
 QT += quickcontrols2
 CONFIG += c++11
-
+CONFIG += static
+CONFIG += staticlib
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Refer to the documentation for the
@@ -24,17 +25,24 @@ RESOURCES += \
     qml.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH += "/home/user/MySoftware/DatasetNavigator/DatasetNavigator/qml"
+QML_IMPORT_PATH += "/home/user/MySoftware/DatasetNavigator2/qml"
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =
 CONFIG += c++11
+#/home/user/MySoftware/DatasetNavigator2/thirdparty/
 unix {
+    ZPATHBIN = "/opt/zeromq/only_bin/lib"
+    ZPATHINC = "$$_PRO_FILE_PWD_/thirdparty/"
+    INCLUDEPATH += "/opt/zeromq/only_bin/includes/"
+    message($$ZPATHINC)
+    INCLUDEPATH += $$ZPATHINC
+    LIBS += $$ZPATHBIN/libzmq.a
+    LIBS += $$ZPATHBIN/libczmq.a
+    LIBS += -lpthread
+    DEFINES += _GLIBCXX_USE_NANOSLEEP
     target.path = /usr/lib
     INSTALLS += target
-    ZPATH = "/usr/lib/x86_64-linux-gnu"
-    LIBS += $$ZPATH/libzmq.so
-    LIBS += $$ZPATH/libczmq.so
-    LIBS += $$ZPATH/libzmqpp.so
+    #ZPATH = "/usr/lib/x86_64-linux-gnu"
 }
 
 # Default rules for deployment.
@@ -44,7 +52,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     qmlback.h \
-    zhelpers.h \
     zmqtopy.h
 
 DISTFILES += \

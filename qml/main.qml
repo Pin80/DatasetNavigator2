@@ -6,6 +6,8 @@ import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
 import ipc.zmq 1.0
 import QtQuick.Window 2.12
+import Qt.labs.platform 1.1
+
 
 ApplicationWindow {
     id: mainapp
@@ -23,6 +25,18 @@ ApplicationWindow {
     onClosing: {
         Tipcagent.closeWindow()
     }
+    // Под Gnome не работает
+    /*
+    SystemTrayIcon {
+        visible: true
+        iconSource:  "qrc:/images/favicon_s.png"
+        onActivated: {
+            mainapp.show()
+            mainapp.raise()
+            mainapp.requestActivate()
+        }
+    }
+    */
     ColumnLayout {
         spacing: 2
         anchors.margins: 2
@@ -106,6 +120,7 @@ ApplicationWindow {
                 }
             }
         }
+
         TFolderListPanel {
             id: folderlistpanel
             objectName: "folderlistpanel"
@@ -146,4 +161,12 @@ ApplicationWindow {
             }
         }
     } //ColumnLayout
+    Component.onCompleted: {
+        x = Screen.width / 2 - width / 2
+        y = Screen.height / 2 - height / 2
+        if (QT_DEBUG === false) {
+            togglepanel.toggle_im = true
+            Tipcagent.sig_bindSocket()
+        }
+    }
 } //ApplicationWindow

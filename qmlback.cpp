@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QQmlComponent>
+#include <QQmlContext>
 #include "qmlback.h"
 
 QObject *getInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
@@ -63,13 +64,20 @@ bool init(QQmlApplicationEngine& _engine)
     QString scriptFile =  "annot_tool.py";
 
     QStringList pythonCommandArguments = QStringList() << scriptFile;
-    //initstruct.pyprocess->start(program, pythonCommandArguments);
-    //initstruct.pyprocess->waitForStarted();
+    #ifndef QT_DEBUG
+    initstruct.pyprocess->start(program, pythonCommandArguments);
+    initstruct.pyprocess->waitForStarted();
+    #endif
     initstruct.zbackend.reset(new ZMQBackend(urlpc, urlcp));
     initstruct.prov.reset( new ColorImageProvider());
     qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
                                       "Tipcagent",
                                       getInstance);
+    #ifdef QT_DEBUG
+    _engine.rootContext()->setContextProperty("QT_DEBUG", QVariant(true));
+    #else
+    _engine.rootContext()->setContextProperty("QT_DEBUG", QVariant(false));
+    #endif // QT_DEBUG
     _engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (_engine.rootObjects().isEmpty())
         return false;

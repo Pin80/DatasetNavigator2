@@ -19,7 +19,7 @@ Rectangle {
     property int imgwidth: 350*scalekx
     property int imgheight: 350*scaleky
     property string imgdialog_title: "intro"
-    property string imgdialog_fname: "qrc:///qml/intro.png"
+    property string imgdialog_fname: "qrc:///images/intro.png"
     property string maskfolder: ""
     property alias imodel: folderModel
     property alias modelfolder: folderModel.folder
@@ -34,7 +34,7 @@ Rectangle {
         onNewcountChanged: {
             if (folderModel.count <= 0) {
                 imgdialog_title.title = "intro"
-                imgdialog_fname.fname = "qrc:///qml/intro.png"
+                imgdialog_fname.fname = "qrc:///images/intro.png"
             }
         }
     }
@@ -102,7 +102,7 @@ Rectangle {
                         if (ListView.isCurrentItem) {
                             if (curdelegfname == "") {
                                 imgdialog_title = "intro"
-                                imgdialog_fname = "qrc:///qml/intro.png"
+                                imgdialog_fname = "qrc:///images/intro.png"
                             }
                             else {
                                 imgdialog_title = curdelegfname

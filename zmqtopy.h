@@ -1,14 +1,10 @@
 #ifndef ZMQTOPY_H
 #define ZMQTOPY_H
-#include <zmq.h>
-#include <zmq.hpp>
-#include <iostream>
 #include <QObject>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QtDebug>
 #include <QFile>
-#include <zhelpers.h>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -16,6 +12,11 @@
 #include <QFileInfo>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
+#include <zmq.h>
+#include <zmq.hpp>
+#include <zhelpers.h>
+#include <iostream>
+#include <thread>
 
 class ZMQBackend: public QObject
 {
@@ -98,13 +99,23 @@ public slots:
     {
         if (m_isbound)
             stopZMQpool();
-        m_isrunning = false;
-        m_future.waitForFinished();
-        int rc = zmq_ctx_destroy(m_context);
-        if (rc != 0)
+        if (m_isrunning)
         {
-            qCritical() << "error in terminateZMQ_pool (zmq_ctx_destroy)";
-            m_isError = true;
+            m_isrunning = false;
+            m_future.waitForFinished();
+        }
+        if (m_context)
+        {
+            int rc = zmq_ctx_destroy(m_context);
+            if (rc != 0)
+            {
+                qCritical() << "error in terminateZMQ_pool (zmq_ctx_destroy)";
+                m_isError = true;
+            }
+            else
+            {
+                m_context = nullptr;
+            }
         }
     }
 public slots:

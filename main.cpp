@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QDateTime>
 #include <QtGlobal>
+#include <QIcon>
 #include "qmlback.h"
 
 QScopedPointer<QFile>   m_logFile;
@@ -14,16 +15,18 @@ int main(int argc, char *argv[])
     try
     {
         const QString good_qt_version = "5.12";
-        QCoreApplication::setOrganizationName("Some organization");
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+        QGuiApplication::setOrganizationName("Some organization");
+        QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QGuiApplication app(argc, argv);
         m_logFile.reset(new QFile("datasetnavigator.log"));
         m_logFile.data()->open(QFile::Append | QFile::Text);
         if (!m_logFile->isOpen())
             return -1;
-        //qInstallMessageHandler(messageHandler);
+        #ifndef QT_DEBUG
+        qInstallMessageHandler(messageHandler);
+        #endif
         qInfo() << "Qt version is:" << QT_VERSION_STR;
-        if (QT_VERSION_MAJOR < 5)
+        if ( (QT_VERSION_MAJOR < 5) || (QT_VERSION_MINOR < 10))
         {
             qCritical() << "Qt version is bad:";
             return -1;
@@ -36,6 +39,8 @@ int main(int argc, char *argv[])
         {
             qWarning() << "Qt version is not mathced. library may not be fully compitable";
         }
+        // Под Gnome не работает
+        app.setWindowIcon(QIcon("./images/favicon.png"));
         QQmlApplicationEngine engine;
         if (!init(engine))
             return -1;
