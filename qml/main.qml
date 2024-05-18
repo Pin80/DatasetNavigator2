@@ -168,5 +168,12 @@ ApplicationWindow {
             togglepanel.toggle_im = true
             Tipcagent.sig_bindSocket()
         }
+        var urlfolder =  Tipcagent.folder
+        fldbtnpanel.panel_folder = urlfolder
+        console.log("default folder:", urlfolder )
+        urlfolder = Tipcagent.maskfolder
+        fldbtnpanel.panel_maskfolder = urlfolder
+        console.log("default mfolder:", urlfolder )
+
     }
 } //ApplicationWindow

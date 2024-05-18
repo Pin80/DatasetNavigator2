@@ -8,8 +8,8 @@ import ipc.zmq 1.0
 
 Item {
     id: fldButtonPanel
-    property string panel_folder: ""
-    property string panel_maskfolder: ""
+    property alias panel_folder: dirdialog_orig.folder
+    property alias panel_maskfolder: dir_mdialogM.folder
     property int fldButtonPanrlHeight: 120
     signal updatelists();
     ColumnLayout {
@@ -26,9 +26,7 @@ Item {
             TFileDialog {
                 id: dirdialog_orig
                 onAccepted: {
-                    panel_folder = folder
-                    console.log("folder")
-                    console.log(Tipcagent.folder)
+                    console.log("folder:", Tipcagent.folder)
                 }
             }
             grad: grad1
@@ -49,7 +47,7 @@ Item {
                 onClicked: {
                     console.log("folder dialog called")
                     dirdialog_orig.title = "Please choose a image folder"
-                    dirdialog_orig.folder = "/home/user"
+                    //dirdialog_orig.folder = "file:///home/user/Documents/DNAVIGATOR/dataset1"
                     dirdialog_orig.open()
                 }
                 onEntered: {
@@ -73,7 +71,6 @@ Item {
             TFileDialog {
                 id: dir_mdialogM
                 onAccepted: {
-                    panel_maskfolder = folder
                     dir_mdialogM.close()
                 }
             }

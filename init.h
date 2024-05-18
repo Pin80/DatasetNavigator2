@@ -1,0 +1,24 @@
+#ifndef INIT_H
+#define INIT_H
+
+#include "qmlback.h"
+#include "zmqtopy.h"
+
+void messageHandler(QtMsgType type,
+                    const QMessageLogContext &context,
+                    const QString &msg);
+
+bool init(QQmlApplicationEngine& _engine);
+
+struct TInit
+{
+    QJsonObject jsonObj;
+    QScopedPointer<ColorImageProvider> prov;
+    QScopedPointer< QProcess > pyprocess;
+    QScopedPointer<ZMQBackend> zbackend;
+};
+
+extern TInit initstruct;
+extern QScopedPointer<QFile>   m_logFile;
+
+#endif // INIT_H

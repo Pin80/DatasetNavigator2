@@ -10,5 +10,3 @@
     1)pip install opencv-python
     2)https://www.qt.io/qt-5-12 -> (через VPN (для россии))
     3)pip install zmq
-
-	

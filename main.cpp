@@ -1,14 +1,7 @@
 #include <iostream>
-#include <QDateTime>
 #include <QtGlobal>
 #include <QIcon>
-#include "qmlback.h"
-
-QScopedPointer<QFile>   m_logFile;
-TInit initstruct;
-void messageHandler(QtMsgType type,
-                    const QMessageLogContext &context,
-                    const QString &msg);
+#include "init.h"
 
 int main(int argc, char *argv[])
 {
@@ -57,27 +50,4 @@ int main(int argc, char *argv[])
     {
         std::cerr  << "unknown error" << std::endl;
     }
-}
-
-void messageHandler(QtMsgType type,
-                    const QMessageLogContext &context,
-                    const QString &msg)
-{
-    // Открываем поток записи в файл
-    QTextStream out(m_logFile.data());
-    // Записываем дату записи
-    out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-    // По типу определяем, к какому уровню относится сообщение
-    switch (type)
-    {
-    case QtInfoMsg:     out << "INF "; break;
-    case QtDebugMsg:    out << "DBG "; break;
-    case QtWarningMsg:  out << "WRN "; break;
-    case QtCriticalMsg: out << "CRT "; break;
-    case QtFatalMsg:    out << "FTL "; break;
-    }
-    // Записываем в вывод категорию сообщения и само сообщение
-    out << context.category << ": "
-        << msg << endl;
-    out.flush();    // Очищаем буферизированные данные
 }
