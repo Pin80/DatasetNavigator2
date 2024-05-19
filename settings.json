@@ -12,5 +12,6 @@
         "mask_prefix" : "mask_",
         "mask_subfolder" : "masks",
         "log_filename" : "annottool.log",
-        "start_folder" : "/home/user/Documents/DNAVIGATOR"
+        "start_folder" : "Documents/DNAVIGATOR/dataset1",
+        "python_app" : "annot_tool.py"
 }

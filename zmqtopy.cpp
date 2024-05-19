@@ -13,9 +13,14 @@ ZMQBackend::ZMQBackend(QString _puburl, QString _suburl)
     m_future = QtConcurrent::run(this, &ZMQBackend::processZMQpool);
 }
 
+bool ZMQBackend::isBound() const
+{
+    return m_isbound;
+}
+
 ZMQBackend::~ZMQBackend()
 {
-    terminateZMQ_pool();
+    //terminateZMQ_pool();
 }
 
 void ZMQBackend::onBindSocket()
@@ -89,6 +94,7 @@ void ZMQBackend::terminateZMQ_pool()
         {
             qCritical() << "error in terminateZMQ_pool (zmq_ctx_destroy)";
             m_isError = true;
+            m_context = nullptr;
         }
         else
         {
@@ -183,6 +189,7 @@ void ZMQBackend::processZMQpool()
     memset(m_message, 0, 256);
     while(m_isrunning)
     {
+
         if ((!m_isError) && (m_isbound))
         {
             int rc = zmq_recv(m_subscriber, m_message, 256, ZMQ_NOBLOCK);
@@ -229,6 +236,7 @@ void ZMQBackend::processZMQpool()
             m_sendTrigger = false;
             m_lock.unlock();
         }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

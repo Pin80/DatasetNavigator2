@@ -12,25 +12,32 @@ void messageHandler(QtMsgType type,
     // Записываем дату записи
     out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
     // По типу определяем, к какому уровню относится сообщение
+    QString fullstr;
     switch (type)
     {
-    case QtInfoMsg:     out << "INF "; break;
-    case QtDebugMsg:    out << "DBG "; break;
-    case QtWarningMsg:  out << "WRN "; break;
-    case QtCriticalMsg: out << "CRT "; break;
-    case QtFatalMsg:    out << "FTL "; break;
+    case QtInfoMsg:     fullstr =  "INF "; break;
+    case QtDebugMsg:    fullstr =  "DBG "; break;
+    case QtWarningMsg:  fullstr =  "WRN "; break;
+    case QtCriticalMsg: fullstr =  "CRT "; break;
+    case QtFatalMsg:    fullstr =  "FTL "; break;
     }
     // Записываем в вывод категорию сообщения и само сообщение
-    out << context.category << ": "
-        << msg << endl;
+    fullstr = QString(context.category) + ": " + msg;
+    out << fullstr << endl;
     out.flush();    // Очищаем буферизированные данные
+    if ((type == QtCriticalMsg) || (type == QtFatalMsg))
+    {
+        //QErrorMessage msgDialog;
+        //msgDialog.showMessage(msg);
+        //msgDialog.exec();
+    }
 }
 
 QObject* getInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
     TZMQIPC * inst = TZMQIPC::getInstance(engine,
                                           scriptEngine,
-                                          initstruct.jsonObj,
+                                          initstruct.broker.get(),
                                           initstruct.pyprocess.get(),
                                           initstruct.zbackend.get(),
                                           initstruct.prov.get());
@@ -39,54 +46,34 @@ QObject* getInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 bool init(QQmlApplicationEngine& _engine)
 {
-    QJsonParseError parseError;
-    QJsonDocument jsonDoc;
-    QFile fin("settings.json");
-    fin.open(QIODevice::ReadOnly);
-    if (!fin.isOpen())
-    {
-        qCritical() << "settings file is not found";
-        return false;
-    }
-    QByteArray ba = fin.readAll();
-    jsonDoc = QJsonDocument::fromJson(ba, &parseError);
-    if (parseError.error != QJsonParseError::NoError)
-    {
-        qCritical() << "Parse error at" << parseError.offset << ":" << parseError.errorString();
-        return false;
-    }
-    if (jsonDoc.isNull() || jsonDoc.isEmpty() || !jsonDoc.isObject())
-    {
-        qCritical() << "No settings is found in settings.json";
-        return false;
-    }
-    initstruct.jsonObj = jsonDoc.object();
-    QJsonValue value = initstruct.jsonObj.value("zmqurlpc");
+    QJsonValue value = initstruct.broker->getSettings().value("zmqurlpc");
     QString urlpc = value.toString();
     if (urlpc.isEmpty())
     {
         qCritical() << "No annot tool to DN url is found in settings.json";
         return false;
     }
-    value = initstruct.jsonObj.value("zmqurlcp");
+    value = initstruct.broker->getSettings().value("zmqurlcp");
     QString urlcp = value.toString();
     if (urlcp.isEmpty())
     {
         qCritical() << "No DN to annot tool url is found in settings.json";
         return false;
     }
+    value = initstruct.broker->getSettings().value("python_app");
+    QString pyapp = value.toString();
     initstruct.pyprocess.reset( new QProcess(nullptr));
     QString program = "python3";
-    QString scriptFile =  "annot_tool.py";
-
+    QString scriptFile =  pyapp;
     QStringList pythonCommandArguments = QStringList() << scriptFile;
     #ifndef QT_DEBUG
     initstruct.pyprocess->start(program, pythonCommandArguments);
     initstruct.pyprocess->waitForStarted();
     #endif
     initstruct.zbackend.reset(new ZMQBackend(urlpc, urlcp));
-    initstruct.prov.reset( new ColorImageProvider());
-    qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
+    initstruct.prov.reset( new ColorImageProvider(initstruct.broker.get()));
+    _engine.addImageProvider( QLatin1String("colors"), initstruct.prov.release() );
+    (void)qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
                                       "Tipcagent",
                                       getInstance);
     #ifdef QT_DEBUG
@@ -101,9 +88,6 @@ bool init(QQmlApplicationEngine& _engine)
                      SIGNAL(finished(int,QProcess::ExitStatus)),
                      initstruct.zbackend.get(),
                      SLOT(processFinished(int, QProcess::ExitStatus)));
-    QObject* root = _engine.rootObjects()[0]->findChild<QObject *>("folderlistpanel");
-    initstruct.prov->setRootElement(root);
-    _engine.addImageProvider( QLatin1String("colors"), initstruct.prov.get() );
     return true;
 }
 

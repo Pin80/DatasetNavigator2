@@ -12,16 +12,21 @@ Window{
     color: "brown"
     visible: false
     property string fname: ""
+    property alias iwidth:image_frame2.sourceSize.width
+    property alias iheight:image_frame2.sourceSize.height
+    width: iwidth + 20
+    height: iheight + 20
     ColumnLayout {
         anchors.fill: parent
         Rectangle {
-            Layout.alignment: Qt.AlignRight
+            id: imageDialog_rect
+            Layout.alignment: Qt.AlignCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
             color: "green"
             border.color: "black"
             border.width: 2
-            radius: (imageDialog.width/350)*10
+            radius: (10*(image_frame2.width + image_frame2.height))/350
             Image {
                 id: image_frame2
                 anchors.fill: parent
@@ -33,6 +38,7 @@ Window{
                 Layout.alignment: Qt.AlignHCenter
                 source: imageDialog.fname
                 scale: Qt.KeepAspectRatio
+
             }
         }
     }

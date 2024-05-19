@@ -1,6 +1,7 @@
 #NEW Version
 QT += qml quick
 QT += quickcontrols2
+QT += widgets
 CONFIG += c++11
 CONFIG += static
 CONFIG += staticlib

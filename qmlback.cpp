@@ -1,53 +1,27 @@
 #include "qmlback.h"
 
-ColorImageProvider::ColorImageProvider(QObject * _main)
+ColorImageProvider::ColorImageProvider(TBroker *_broker)
            : QQuickImageProvider(QQuickImageProvider::Pixmap),
              QObject(nullptr),
-             m_main(_main)
-{     }
+             m_broker(_broker)
+{
+    connect(m_broker, SIGNAL(ifldChanged(QString)), this, SLOT(onFolderName(QString)));
+}
 
 QPixmap ColorImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
-   const int cwidth = 125;
-   const int cheight = 125;
+   const int cwidth = 325;
+   const int cheight = 325;
    int width = cwidth;
    int height = cheight;
-   if (m_main)
-   {
-       QVariant varvalue = m_main->property("imgwidth");
-       if ((!varvalue.isValid()) || (varvalue.type() != QVariant::Int))
-       {
-           //error
-            width = cwidth;
-       }
-       else
-       {
-            width = varvalue.toInt()*0.9;
-       }
-       varvalue = m_main->property("imgheight");
-       if ((!varvalue.isValid()) || (varvalue.type() != QVariant::Int))
-       {
-           //error
-           height = cheight;
-       }
-       else
-       {
-            height = varvalue.toInt()*0.9;
-       }
-   }
-   else
-   {
-       width = cwidth;
-       height = cheight;
-   }
    QString sep = (m_fld.isEmpty())?"":"/";
    QString fullname = m_fld + sep + id;
-   if (size)
-      *size = QSize(width, height);
    auto r_w = requestedSize.width();
    auto r_h = requestedSize.height();
    auto actual_w = r_w > 0 ? requestedSize.width() : width;
    auto actual_h = r_h > 0 ? requestedSize.height() : height;
+   if (size)
+      *size = QSize(actual_w, actual_h);
    if (QFileInfo::exists(fullname))
    {
        QPixmap pixmap(fullname);
@@ -61,10 +35,6 @@ QPixmap ColorImageProvider::requestPixmap(const QString &id, QSize *size, const 
        return pixmap;
    }
 }
-void ColorImageProvider::setRootElement(QObject * _main)
-{
-    m_main = _main;
-}
 
 void ColorImageProvider::onFolderName(QString _fld)
 {
@@ -76,7 +46,7 @@ void ColorImageProvider::onFolderName(QString _fld)
 
 TZMQIPC * TZMQIPC::getInstance(QQmlEngine *engine,
                              QJSEngine *scriptEngine,
-                             const QJsonObject& _jobj,
+                             TBroker* _broker,
                              QProcess * _proc,
                              ZMQBackend* _zb,
                              ColorImageProvider* _cvp)
@@ -84,7 +54,7 @@ TZMQIPC * TZMQIPC::getInstance(QQmlEngine *engine,
     Q_UNUSED(engine)
     Q_UNUSED(scriptEngine)
     const QJsonDocument _jsonDoc;
-    static TZMQIPC * pinstance = new TZMQIPC(_jobj, _proc, _zb, _cvp, nullptr);
+    static TZMQIPC * pinstance = new TZMQIPC(_broker, _proc, _zb,  nullptr);
     //m_instance = pinstance;
     return pinstance;
 }
@@ -118,9 +88,9 @@ void TZMQIPC::setMaskFolder(QUrl _fld)
 
 void TZMQIPC::closeWindow()
 {
-    if (m_pyprocess->state() == QProcess::Running)
-        m_pyprocess->terminate();
-    m_pyprocess->waitForFinished();
+    //if (m_pyprocess->state() == QProcess::Running)
+    //    m_pyprocess->terminate();
+    //m_pyprocess->waitForFinished();
 }
 
 bool TZMQIPC::sendString(const QString& fname,
@@ -208,27 +178,27 @@ QUrl TZMQIPC::getshortMaskName(const QString& fname,
 }
 
 
-TZMQIPC::TZMQIPC(const QJsonObject& _jobj,
+TZMQIPC::TZMQIPC(TBroker* _broker,
                  QProcess * _proc,
                  ZMQBackend* _zb,
-                 ColorImageProvider* _cvp,
                  QObject *parent)
-    : QObject(parent), m_jobj(_jobj), m_pyprocess(_proc), m_zb(_zb), m_cvp(_cvp)
+    : QObject(parent), m_broker(_broker), m_pyprocess(_proc), m_zb(_zb)
 {
     try
     {
         qDebug() << "TZMQIPC constructor called";
-        if (m_jobj.find("zmqurlpc") == m_jobj.end())
+        if (!m_broker)
+            return;
+        if (m_broker->getSettings().find("zmqurlpc") == m_broker->getSettings().end())
         {
             throw std::runtime_error("key is not found");
         }
-
-        QJsonValue value = m_jobj.value("suffix");
+        QJsonValue value = m_broker->getSettings().value("suffix");
         m_suffix = value.toString();
-        value = m_jobj.value("mask_prefix");
+        value = m_broker->getSettings().value("mask_prefix");
         m_maskprefix = value.toString();
         emit sufChanged();
-        value = m_jobj.value("start_folder");
+        value = m_broker->getSettings().value("start_folder");
         QString folder = value.toString();
         QString efolder = QDir::homePath() + "/" + folder;
         qWarning() << "efolder" << efolder;
@@ -242,7 +212,7 @@ TZMQIPC::TZMQIPC(const QJsonObject& _jobj,
             {
                 m_folder = efolder;
                 emit fldChanged(m_folder);
-                value = m_jobj.value("mask_subfolder");
+                value = m_broker->getSettings().value("mask_subfolder");
                 QString mskfolder = efolder + "/" + value.toString();
                 if (!QDir().mkpath(mskfolder))
                 {
@@ -260,7 +230,7 @@ TZMQIPC::TZMQIPC(const QJsonObject& _jobj,
         {
             m_folder = efolder;
             emit fldChanged(m_folder);
-            value = m_jobj.value("mask_subfolder");
+            value = m_broker->getSettings().value("mask_subfolder");
             m_maskfolder = efolder + "/" + value.toString();
             emit mfldChanged(m_maskfolder);
         }
@@ -274,10 +244,7 @@ TZMQIPC::TZMQIPC(const QJsonObject& _jobj,
             connect(this, SIGNAL(sig_unbindSocket()), m_zb, SLOT(onUnbindSocket()));
             connect(this, SIGNAL(sig_sendString(QString)), m_zb, SLOT(onSendString(QString)));
         }
-        if (m_cvp)
-        {
-            QObject::connect(this,SIGNAL(fldChanged(QString)),m_cvp,SLOT(onFolderName(QString)));
-        }
+        QObject::connect(this,SIGNAL(fldChanged(QString)),m_broker,SIGNAL(ifldChanged(QString)));
     }
     catch (const std::runtime_error& _err)
     {
@@ -292,7 +259,7 @@ TZMQIPC::TZMQIPC(const QJsonObject& _jobj,
 
 TZMQIPC::~TZMQIPC()
 {
-    qDebug() << "Destructor called";
+    qDebug() << "TZMQIPC Destructor called";
 }
 
 

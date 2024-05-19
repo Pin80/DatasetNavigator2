@@ -26,7 +26,7 @@ public:
     ~ZMQBackend();
     ZMQBackend(const ZMQBackend &) = delete;
     ZMQBackend &operator=(const ZMQBackend &) = delete;
-
+    bool isBound() const;
 public slots:
     void onBindSocket();
     void onUnbindSocket();

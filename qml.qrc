@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/TFileDialog.qml</file>
+        <file>qml/TButton.qml</file>
+        <file>qml/TMsgDialog.qml</file>
+        <file>qml/TImgDialog.qml</file>
+        <file>qml/TToggle.qml</file>
+        <file>qml/TFolderButtonPanel.qml</file>
+        <file>qml/TTogglePanel.qml</file>
+        <file>qml/TFolderListPanel.qml</file>
+        <file>qml/TFolderMaskListPanel.qml</file>
+        <file>images/intro.png</file>
+        <file>images/mask.png</file>
+        <file>images/image.png</file>
+    </qresource>
+    <qresource prefix="/images"/>
+</RCC>

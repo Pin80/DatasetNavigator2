@@ -21,17 +21,64 @@
 
 #include "zmqtopy.h"
 
+class TBroker : public QObject
+{
+    Q_OBJECT
+public:
+    TBroker()
+    {
+        QJsonParseError parseError;
+        QJsonDocument jsonDoc;
+        QFile fin("settings.json");
+        fin.open(QIODevice::ReadOnly);
+        if (!fin.isOpen())
+        {
+            qCritical() << "settings file is not found";
+            return;
+        }
+        QByteArray ba = fin.readAll();
+        jsonDoc = QJsonDocument::fromJson(ba, &parseError);
+        if (parseError.error != QJsonParseError::NoError)
+        {
+            qCritical() << "Parse error at" << parseError.offset << ":" << parseError.errorString();
+            return;
+        }
+        if (jsonDoc.isNull() || jsonDoc.isEmpty() || !jsonDoc.isObject())
+        {
+            qCritical() << "No settings is found in settings.json";
+            return;
+        }
+        m_jsonObj = jsonDoc.object();
+    }
+    Q_PROPERTY(QString imgfolder READ getIFolder WRITE setIFolder NOTIFY ifldChanged)
+    QString getIFolder() const
+    {
+        return m_ifolder;
+    }
+    void setIFolder(QString _fld)
+    {
+        m_ifolder = _fld;
+    }
+    QJsonObject& getSettings()
+    {
+        return m_jsonObj;
+    }
+signals:
+    void ifldChanged(QString);
+private:
+    QString m_ifolder;
+    QJsonObject m_jsonObj;
+
+};
+
 class ColorImageProvider : public QObject, public QQuickImageProvider
 {
     Q_OBJECT
 public:
-    ColorImageProvider(QObject * _main = nullptr);
-
-
+    ColorImageProvider(TBroker * _broker);
     QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize) override;
-    void setRootElement(QObject * _main);
 private:
-    QObject * m_main = nullptr;
+    TBroker * m_broker = nullptr;
     QString m_fld;
 public slots:
     void onFolderName(QString _fld);
@@ -46,18 +93,18 @@ public:
     static int typeId;
     static TZMQIPC * getInstance(QQmlEngine *engine,
                                  QJSEngine *scriptEngine,
-                                 const QJsonObject& _jobj,
+                                 TBroker *_broker,
                                  QProcess * _proc,
                                  ZMQBackend* _zb,
                                  ColorImageProvider* _cvp);
 
-    Q_PROPERTY(QString jsuffix READ getSufText NOTIFY sufChanged);
+    Q_PROPERTY(QString jsuffix READ getSufText NOTIFY sufChanged)
     QString getSufText() const;
 
-    Q_PROPERTY(QUrl folder READ getFolder WRITE setFolder NOTIFY fldChanged);
+    Q_PROPERTY(QUrl folder READ getFolder WRITE setFolder NOTIFY fldChanged)
     QUrl getFolder() const;
     void setFolder(QUrl _fld);
-    Q_PROPERTY(QUrl maskfolder READ getMaskFolder WRITE setMaskFolder NOTIFY mfldChanged);
+    Q_PROPERTY(QUrl maskfolder READ getMaskFolder WRITE setMaskFolder NOTIFY mfldChanged)
     QUrl getMaskFolder() const;
     void setMaskFolder(QUrl _fld);
     Q_INVOKABLE void closeWindow();
@@ -89,18 +136,16 @@ signals:
     void mfldChanged(QString);
     void pypChanged(QProcess *);
 private:
-    const QJsonObject m_jobj;
+    TBroker* m_broker;
     QString m_suffix;
     QString m_maskprefix;
     QString m_folder;
     QString m_maskfolder;
     QProcess * m_pyprocess = nullptr;
     ZMQBackend* m_zb = nullptr;
-    ColorImageProvider* m_cvp = nullptr;
-    explicit TZMQIPC(const QJsonObject& _jobj,
+    explicit TZMQIPC(TBroker* _broker,
                      QProcess * _proc,
                      ZMQBackend* _zb,
-                     ColorImageProvider* _cvp,
                      QObject *parent = nullptr);
     ~TZMQIPC();
     explicit TZMQIPC() = delete;

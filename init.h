@@ -1,6 +1,7 @@
 #ifndef INIT_H
 #define INIT_H
 
+#include <QErrorMessage>
 #include "qmlback.h"
 #include "zmqtopy.h"
 
@@ -12,8 +13,8 @@ bool init(QQmlApplicationEngine& _engine);
 
 struct TInit
 {
-    QJsonObject jsonObj;
-    QScopedPointer<ColorImageProvider> prov;
+    QScopedPointer<TBroker> broker;
+    std::unique_ptr<ColorImageProvider> prov;
     QScopedPointer< QProcess > pyprocess;
     QScopedPointer<ZMQBackend> zbackend;
 };

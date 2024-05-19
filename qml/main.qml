@@ -37,6 +37,7 @@ ApplicationWindow {
         }
     }
     */
+
     ColumnLayout {
         spacing: 2
         anchors.margins: 2
@@ -84,13 +85,17 @@ ApplicationWindow {
             }
 
             function onUnboundSocket(result) {
-                if (result)
+                if (result) {
                     isBound = false
+                    sbartxt.text = "socket is unbound"
+                }
             }
 
             function onBoundSocket(result) {
-                if (result)
+                if (result) {
                     isBound = true
+                    sbartxt.text = "socket is bound"
+                }
             }
             Connections {
                 target: Tipcagent
@@ -176,4 +181,5 @@ ApplicationWindow {
         console.log("default mfolder:", urlfolder )
 
     }
+
 } //ApplicationWindow

@@ -22,6 +22,7 @@ from logging import Formatter
 import re
 import os
 import time 
+import signal 
 
 DEFAULT_MASKNAME = "mask_original.png"
 DEFAULT_LOGNAME = "annot_tool.log"
@@ -760,6 +761,8 @@ def process_highgui(*args):
                               inst.args, 
                               inst.__traceback__.tb_lineno)
         ctl.quit = True
+        logging.shutdown()
+        os._exit(0)
         
 def draw_spot(*args):           
     global toolnumber
@@ -869,6 +872,18 @@ def draw_spot(*args):
                               inst.args, 
                               inst.__traceback__.tb_lineno)
         ctl.quit = True
+        logging.shutdown()
+        os._exit(0)
+
+def process_terminal(*args):
+    ctl = args[0]
+    while(not ctl.quit):
+        Key = sys.stdin.read()
+        #time.sleep(0.01)
+        #Key = readchar.readchar()
+        if (Key == 'q'):
+            ctl.quit = True
+    return
     
 def main_loop():
     global ctx
@@ -947,7 +962,6 @@ def main_loop():
         Main_Window.y_coord = mwnd.y_coord - new_k2y*change_y
         return
     def _exit_app():
-        ctx.main_logger.info('application is successfully terminated')
         nonlocal mwnd, ctl, t1, t2
         ctl.quit = True
         return
@@ -969,8 +983,10 @@ def main_loop():
         ROWCENTER1 = ctx.original_image.shape[0]//2
         t1 = Thread(target=process_highgui, args=(ctl,ctx,mwnd))
         t2 = Thread(target=draw_spot, args=(ctl,ctx,mwnd,))
+        t3 = Thread(target=process_terminal, args=(ctl,))
         t1.start()
         t2.start()
+        t3.start()
         #t2.start()
         mwnd.old_fidx = mwnd.class_idx
         circle_mask = get_circlemask(mwnd.width)
@@ -985,6 +1001,7 @@ def main_loop():
             ord('o'): _reset_polygon,
             ord('m'): _cursor_shift,
             ord('h'): _help,
+            #ord('q'):  _exit_app,
             27: _exit_app
             # и так далее
         }
@@ -1055,14 +1072,21 @@ def main_loop():
         k = cv2.waitKey(10) & 0xFF
         switch.get(k, _default)()
         time.sleep(0.01)
+
         if (not ctl.quit and mwnd.isReadyClose()):
             _exit_app()
-    t1.join()
-    t2.join()
+    t1.join(3)
+    t2.join(2)
     del mwnd
+    ctx.main_logger.info("Annotation tool is terminating")
+    logging.shutdown()
+    os._exit(0)
 try:
     check_versions()
     logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:  %(message)s', level=logging.DEBUG)
     main_loop()
 except Exception as inst:
     logging.critical("error %s line:", inst.args, inst.__traceback__.tb_lineno)     # arguments stored in .args
+    logging.shutdown()
+    os._exit(0)
+
