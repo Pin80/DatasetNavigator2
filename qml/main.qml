@@ -4,23 +4,21 @@ import QtQuick.Controls.Styles  1.4
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
-import ipc.zmq 1.0
 import QtQuick.Window 2.12
 import Qt.labs.platform 1.1
+import ipc.zmq 1.0
 
 
-ApplicationWindow {
+Window {
     id: mainapp
     visible: true
-    property real scalekx: (Screen.desktopAvailableWidth/1920)
-    property real scaleky: (Screen.desktopAvailableHeight/1080)
+    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
+    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
     width: scalekx*320
     height: scaleky*480
-    color: "brown"
+    color: "green"
     title: qsTr("Dataset Navigator")
-    font.pixelSize: scaleky*14
     //console.log(folder)
-    property bool toggle_im_state: true
     signal maskboxChanged();
     onClosing: {
         Tipcagent.closeWindow()
@@ -54,7 +52,6 @@ ApplicationWindow {
                 Tipcagent.folder = panel_folder
             }
             onPanel_maskfolderChanged: {
-                folderlistpanel.maskfolder = panel_maskfolder
                 Tipcagent.maskfolder = panel_folder
                 foldermasklistpanel.modelfolder = panel_maskfolder
             }
@@ -74,9 +71,6 @@ ApplicationWindow {
             Layout.preferredHeight: scaleky*20
             Layout.maximumHeight: scaleky*30
             Layout.minimumHeight: scaleky*30
-            onToggle_imChanged: {
-                toggle_im_state = toggle_im
-            }
             onSig_bind: { 
                 Tipcagent.sig_bindSocket()
             }
@@ -125,24 +119,75 @@ ApplicationWindow {
                 }
             }
         }
+        SwipeView {
+            id: swipelist
+            Layout.alignment: Qt.AlignTop
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.preferredHeight: scaleky*40
+            currentIndex: togglepanel.toggle_im ? 0: 1
+            onCurrentIndexChanged: {
+                togglepanel.toggle_im = (currentIndex == 0)? true: false
+            }
 
-        TFolderListPanel {
-            id: folderlistpanel
-            objectName: "folderlistpanel"
-            visible: toggle_im_state
-            Layout.alignment: Qt.AlignTop
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.preferredHeight: scaleky*40
-            property var modelmask: foldermasklistpanel.mmodel
-        }
-        TFolderMaskListPanel {
-            id: foldermasklistpanel
-            visible: !toggle_im_state
-            Layout.alignment: Qt.AlignTop
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.preferredHeight: scaleky*40
+            TFolderListPanel {
+                id: folderlistpanel
+                objectName: "folderlistpanel" // unused
+                //property var modelmask: foldermasklistpanel.mmodel
+                onCheckMaskTest: {
+                    if (typeof foldermasklistpanel.mmodel !== "undefined") {
+                            var mname = Tipcagent.getshortMaskName(curdelegfname,
+                                                                   foldermasklistpanel)
+                            if (mname.length !== 0) {
+                                var res = foldermasklistpanel.mmodel.indexOf(mname)
+                                currchecked = (res !== -1)
+                            }
+                            else {
+                                currchecked = false
+                            }
+                    }
+                    else {
+                        currchecked = false
+                    }
+                }
+                onFindMask: {
+                    console.log("attemt to find mask")
+                    if (typeof foldermasklistpanel.mmodel !== "undefined") {
+                            var mname = Tipcagent.getshortMaskName(curdelegfname,
+                                                                   foldermasklistpanel.modelfolder)
+                            if (mname.length !== 0) {
+                                var res = foldermasklistpanel.mmodel.indexOf(mname)
+                                currchecked = (res !== -1)
+                                res = foldermasklistpanel.mmodel.get(0,"fileName")
+                            }
+                            else {
+                                currchecked = false
+                            }
+                    }
+                    else {
+                        currchecked = false
+                    }
+                }
+                MessageDialog {
+                    id: messageDialog_notsend
+                    title: "Error"
+                    text: "Data is not sent"
+                    //icon: StandardIcon.Critical
+                    Component.onCompleted: visible = false
+                }
+                onSendMessage: {
+                    var res = Tipcagent.sendString(curdelegfname,
+                                         modelfolder,
+                                         foldermasklistpanel.modelfolder,
+                                         currchecked);
+                    if (!res)
+                        messageDialog_notsend.open()
+                }
+
+            }
+            TFolderMaskListPanel {
+                id: foldermasklistpanel
+            }
         }
 
         Rectangle {

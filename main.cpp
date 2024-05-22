@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
 {
     try
     {
-        const QString good_qt_version = "5.12";
+        Q_UNUSED(argc)
+        Q_UNUSED(argv)
         QCoreApplication::setOrganizationName("Some organization");
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication app(argc, argv);
@@ -16,9 +17,9 @@ int main(int argc, char *argv[])
         m_logFile.data()->open(QFile::Append | QFile::Text);
         if (!m_logFile->isOpen())
             return -1;
-        //#ifndef QT_DEBUG
+        #ifndef QT_DEBUG
         qInstallMessageHandler(messageHandler);
-        //#endif
+        #endif
         qInfo() << "Qt version is:" << QT_VERSION_STR;
         if ( (QT_VERSION_MAJOR < 5) || (QT_VERSION_MINOR < 10))
         {

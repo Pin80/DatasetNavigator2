@@ -10,6 +10,4 @@ RoundButton {
     text: "To"
     radius: 10
     flat: false
-
-    //Layout.preferredWidth: parent.width * 0.2
 }

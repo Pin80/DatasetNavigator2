@@ -1,12 +1,12 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Styles  1.4
+import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
 import QtQuick.Controls.Material 2.2
 import QtQuick.Templates 2.2 as T
-import QtQuick.Window 2.12
 
 Item {
     id: togglepanel
@@ -14,8 +14,10 @@ Item {
     property bool isBound: false
     signal sig_bind()
     signal sig_unbind()
-    property real scalekx: (Screen.desktopAvailableWidth/1920)
-    property real scaleky: (Screen.desktopAvailableHeight/1080)
+    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
+    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
+    readonly property string colorBtn: "#af6700"
+    readonly property string colorBtnH: "mistyrose"
     RowLayout {
         anchors.fill: parent
         spacing: 2
@@ -37,7 +39,7 @@ Item {
                 id: indicswitch
                 implicitWidth: 50
                 implicitHeight: togglepanel.height - 2
-                property color btn_color : "white"
+                property color btn_color : colorBtn
                 x: toggle_bind2.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 13
@@ -50,7 +52,8 @@ Item {
                     width: togglepanel.height - 2
                     height: togglepanel.height - 2
                     radius: 13
-                    border.color: toggle_bind2.checked ? (toggle_bind2.down ? "#17a81a" : "#21be2b") : "#999999"
+                    color: colorBtn
+                    border.color:  toggle_bind2.checked ? (toggle_bind2.down ? "#17a81a" : "#21be2b") : "#999999"
                 }
             }
 
@@ -64,7 +67,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : "grey"
+                property color oldcolor : indicswitch.btn_color
                 onClicked: {
                     console.log("zmq Button Pressed.");
                     var result = false
@@ -77,7 +80,7 @@ Item {
                 }
                 onEntered: {
                         oldcolor = indicswitchbtn.color
-                        indicswitchbtn.color = "mistyrose"
+                        indicswitchbtn.color = colorBtnH
                 }
                 onExited: {
                         indicswitchbtn.color = oldcolor
@@ -94,14 +97,15 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
             Layout.preferredWidth: togglepanel.width*0.2
+            palette.button: colorBtn
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : "grey"
+                property color oldcolor : colorBtn
                 onEntered: {
                     if (!togglepanel.toggle_im) {
                         oldcolor = toggle_i.palette.button
-                        toggle_i.palette.button = "mistyrose"
+                        toggle_i.palette.button = colorBtnH
                     }
                 }
                 onExited: {
@@ -126,14 +130,15 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
             Layout.preferredWidth: togglepanel.width*0.2
+            palette.button: colorBtn
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : "grey"
+                property color oldcolor : colorBtn
                 onEntered: {
                     if (togglepanel.toggle_im) {
                         oldcolor = toggle_m.palette.button
-                        toggle_m.palette.button = "mistyrose"
+                        toggle_m.palette.button = colorBtnH
                     }
                 }
                 onExited: {

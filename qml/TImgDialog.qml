@@ -12,8 +12,8 @@ Window{
     color: "brown"
     visible: false
     property string fname: ""
-    property alias iwidth:image_frame2.sourceSize.width
-    property alias iheight:image_frame2.sourceSize.height
+    property alias iwidth:image_frame.sourceSize.width
+    property alias iheight:image_frame.sourceSize.height
     width: iwidth + 20
     height: iheight + 20
     ColumnLayout {
@@ -26,9 +26,9 @@ Window{
             color: "green"
             border.color: "black"
             border.width: 2
-            radius: (10*(image_frame2.width + image_frame2.height))/350
+            radius: (10*(image_frame.width + image_frame.height))/350
             Image {
-                id: image_frame2
+                id: image_frame
                 anchors.fill: parent
                 anchors.margins: (imageDialog.width/350)*10
                 horizontalAlignment: Image.AlignHCenter

@@ -27,9 +27,9 @@ void messageHandler(QtMsgType type,
     out.flush();    // Очищаем буферизированные данные
     if ((type == QtCriticalMsg) || (type == QtFatalMsg))
     {
-        //QErrorMessage msgDialog;
-        //msgDialog.showMessage(msg);
-        //msgDialog.exec();
+        QErrorMessage msgDialog;
+        msgDialog.showMessage(msg);
+        msgDialog.exec();
     }
 }
 
