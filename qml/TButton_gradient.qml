@@ -1,20 +1,15 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles 1.4
-import QtQuick.Window 2.12
-import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
-import Qt.labs.folderlistmodel 2.0
 import QtGraphicalEffects 1.0
+import GlobalProp 1.0
 
 Rectangle {
-    id: custom_button
-    property string text: "Button"
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
+    property string btntext: qsTr("Button")
     property bool is_pressed: false
     property bool is_hovered: false
-    border.color: "green"
+    border.color: TStyle.background
     border.width: 3
     color: "#a1395847"
     RowLayout {
@@ -89,10 +84,10 @@ Rectangle {
                 id: btn_text
                 anchors.fill: parent
                 elide: Text.ElideLeft
-                font.pointSize: scaleky*14
+                font.pointSize: TStyle.scaleky*14
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                text: custom_button.text
+                text: btntext
                 font.bold: true
             }
          }

@@ -1,23 +1,19 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles  1.4
 import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
-import QtQuick.Controls.Material 2.2
-import QtQuick.Templates 2.2 as T
+import QtQuick.Controls.Material 2.12
+import GlobalProp 1.0
 
 Item {
-    id: togglepanel
+    id : toggle_panel
     property bool toggle_im: true
     property bool isBound: false
     signal sig_bind()
     signal sig_unbind()
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
-    readonly property string colorBtn: "#af6700"
-    readonly property string colorBtnH: "mistyrose"
     RowLayout {
         anchors.fill: parent
         spacing: 2
@@ -25,11 +21,10 @@ Item {
         Switch {
             id: toggle_bind2
             text: qsTr("Connect")
-            font.pointSize: scaleky*14
+            font.pointSize: TStyle.scaleky*14
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredWidth: togglepanel.width*0.6
             checked: isBound
             TMsgDialog {
                 id : errordialog2
@@ -37,37 +32,37 @@ Item {
 
             indicator: Rectangle {
                 id: indicswitch
-                implicitWidth: 50
-                implicitHeight: togglepanel.height - 2
-                property color btn_color : colorBtn
+                implicitWidth: 2*indicswitchbtn.width
+                implicitHeight: toggle_panel.height - 2
                 x: toggle_bind2.leftPadding
-                y: parent.height / 2 - height / 2
-                radius: 13
-                color: toggle_bind2.checked ? "#17a81a" : "grey"
-                border.color: toggle_bind2.checked ? "#17a81a" : "#cccccc"
+                y: parent.height / 2 - toggle_panel.height / 2
+                radius: indicswitchbtn.radius
+                color: toggle_bind2.checked ? TStyle.indicator_on: TStyle.background_small
+                border.color: TStyle.background_border
 
                 Rectangle {
                     id: indicswitchbtn
-                    x: toggle_bind2.checked ? parent.width - width : 0
-                    width: togglepanel.height - 2
-                    height: togglepanel.height - 2
-                    radius: 13
-                    color: colorBtn
-                    border.color:  toggle_bind2.checked ? (toggle_bind2.down ? "#17a81a" : "#21be2b") : "#999999"
+                    x: toggle_bind2.checked ? parent.width - 2*radius : 0
+                    implicitWidth: 26*TStyle.scalekx
+                    implicitHeight: implicitWidth
+                    radius: implicitWidth/2
+                    color: TStyle.indicator
+                    border.color:  TStyle.background_border
                 }
             }
 
             contentItem: Text {
+                id: txtswitch
                 text: toggle_bind2.text
                 font: toggle_bind2.font
                 opacity: enabled ? 1.0 : 0.3
                 verticalAlignment: Text.AlignVCenter
-                leftPadding: toggle_bind2.indicator.width + toggle_bind2.spacing
+                leftPadding: (indicswitch.width + 5)
             }
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : indicswitch.btn_color
+                property color oldcolor : TStyle.indicator
                 onClicked: {
                     console.log("zmq Button Pressed.");
                     var result = false
@@ -80,7 +75,7 @@ Item {
                 }
                 onEntered: {
                         oldcolor = indicswitchbtn.color
-                        indicswitchbtn.color = colorBtnH
+                        indicswitchbtn.color = TStyle.indicator_hovered
                 }
                 onExited: {
                         indicswitchbtn.color = oldcolor
@@ -90,33 +85,34 @@ Item {
         TToggle {
             id: toggle_i
             text: qsTr("Im")
-
-            checked: togglepanel.toggle_im
-            checkable: !togglepanel.toggle_im
+            checked: toggle_im
+            checkable: !toggle_im
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredWidth: togglepanel.width*0.2
-            palette.button: colorBtn
+            Layout.preferredWidth: parent.width*0.2
+            palette.button: TStyle.indicator
+            palette.dark: TStyle.indicator_pressed
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : colorBtn
+                property color oldcolor : TStyle.indicator
                 onEntered: {
-                    if (!togglepanel.toggle_im) {
+                    if (!toggle_im) {
                         oldcolor = toggle_i.palette.button
-                        toggle_i.palette.button = colorBtnH
+                        toggle_i.palette.button = TStyle.indicator_hovered
                     }
                 }
                 onExited: {
-                    if (!togglepanel.toggle_im) {
+                    if (!toggle_im) {
                         toggle_i.palette.button = oldcolor
                     }
                 }
                 onPressed: {
-                    if (!togglepanel.toggle_im) {
-                        togglepanel.toggle_im = true
-                        toggle_i.palette.button = oldcolor
+                    if (!toggle_im) {
+                        toggle_im = true
+                        toggle_m.palette.button = TStyle.indicator
+                        toggle_i.palette.dark = TStyle.indicator_pressed
                     }
                 }
              }
@@ -124,32 +120,34 @@ Item {
         TToggle {
             id: toggle_m
             text: qsTr("Msk")
-            checked: !togglepanel.toggle_im
-            checkable: togglepanel.toggle_im
+            checked: !toggle_im
+            checkable: toggle_im
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            Layout.preferredWidth: togglepanel.width*0.2
-            palette.button: colorBtn
+            Layout.preferredWidth: parent.width*0.2
+            palette.button: TStyle.indicator
+            palette.dark: TStyle.indicator_pressed
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : colorBtn
+                property color oldcolor : TStyle.indicator
                 onEntered: {
-                    if (togglepanel.toggle_im) {
+                    if (toggle_im) {
                         oldcolor = toggle_m.palette.button
-                        toggle_m.palette.button = colorBtnH
+                        toggle_m.palette.button = TStyle.indicator_hovered
                     }
                 }
                 onExited: {
-                    if (togglepanel.toggle_im) {
+                    if (toggle_im) {
                         toggle_m.palette.button = oldcolor
                     }
                 }
                 onPressed: {
-                    if (togglepanel.toggle_im) {
-                        togglepanel.toggle_im = false
-                        toggle_m.palette.button = oldcolor
+                    if (toggle_im) {
+                        toggle_im = false
+                        toggle_i.palette.button = TStyle.indicator
+                        toggle_m.palette.dark = TStyle.indicator_pressed
                     }
                 }
             }

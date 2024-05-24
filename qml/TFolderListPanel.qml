@@ -5,20 +5,17 @@ import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.12
+import ipc.zmq 1.0
+import GlobalProp 1.0
 
 Item {
-    id: rectI
-    signal maskboxChanged();
-    signal checkMaskTest();
-    signal findMask();
-    signal sendMessage();
-    property alias curdelegfname: lview._curdelegfname
-    property alias currchecked : lview._currchecked
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
+    signal indicon();
     property alias imodel: folderModel
     property alias modelfolder: folderModel.folder
+    property var maskmodel: undefined
     property alias ilview : lview
+    property string imgdialog_title: "intro"
+    property string imgdialog_fname: "qrc:///images/intro.png"
     FolderListModel {
         id: folderModel
         //nameFilters: ["*.*"]
@@ -28,8 +25,8 @@ Item {
         property int newcount : count
         onNewcountChanged: {
             if (folderModel.count <= 0) {
-                ifileDelegate.imgdialog_title.title = "intro"
-                ifileDelegate.imgdialog_fname.fname = "qrc:///images/intro.png"
+                imgdialog_title.title = "intro"
+                imgdialog_fname.fname = "qrc:///images/intro.png"
             }
         }
     }
@@ -37,10 +34,19 @@ Item {
         anchors.fill: parent
         fillMode: Image.Tile
         source: "qrc:///images/image_ilist.png"
+        TImgDialog {
+            id : imgdialog
+            property int imgwidth: 350*TStyle.scalekx
+            property int imgheight: 350*TStyle.scaleky
+            iwidth: imgwidth
+            iheight: imgheight
+            title: imgdialog_title
+            fname: imgdialog_fname
+        }
         ScrollView {
             id: flickable
             anchors.fill: parent
-            anchors.rightMargin: 20*scalekx
+            anchors.rightMargin: 20*TStyle.scalekx
             focus: true
             ScrollBar.vertical: TScrollBar {
                 id: lscrollbar
@@ -60,8 +66,6 @@ Item {
                 Keys.onUpPressed: lview.decrementCurrentIndex() //перемещение стрелками
                 Keys.onDownPressed: lview.incrementCurrentIndex() //перемещение стрелками
                 property bool currentMaskFound: true
-                property string _curdelegfname: curdelegfname
-                property string _currchecked: currchecked
                 delegate: ifileDelegate
                 model: folderModel
                 Component {
@@ -69,54 +73,130 @@ Item {
                     TDelegate_img {
                         id: ifileDelegate_rec
                         delegfname: fileName
-                        property string curdelegfname: ListView.isCurrentItem ? delegfname: ""
+                        property string currdelegfname: ListView.isCurrentItem ? delegfname: ""
+                        signal sendMessage(string ifname);
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.margins: 0*(height/25)
                         anchors.rightMargin: 3*(height/25)
-                        height: scaleky*25
-                        property string calcincolor: (index%2 == 0)? "lightblue": "lightgreen"
-                        property string currcolor: ListView.isCurrentItem ? "lightyellow" : calcincolor
-                        readonly property string currcolorH: "yellow"
+                        height: TStyle.scaleky*25
+                        property string calcincolor: (index%2 == 0)? TStyle.list_odd: TStyle.list_even
+                        property string currcolor: ListView.isCurrentItem ? TStyle.list_select : calcincolor
+                        readonly property string currcolorH: TStyle.indicator_hovered
                         property string currcolorhov: ishovered ? currcolorH : currcolor
                         color: currcolorhov
-                        onCheckMaskTest : rectI.checkMaskTest()
+                        onCheckMaskTest: {
+                            if (typeof maskmodel !== "undefined") {
+                                    var mname = Tipcagent.getshortMaskName(fileName,
+                                                                           maskmodel.folder)
+                                    if (mname.length !== 0) {
+                                        var res = maskmodel.indexOf(mname)
+                                        currchecked = (res !== -1)
+                                    }
+                                    else {
+                                        currchecked = false
+                                    }
+                            }
+                            else {
+                                currchecked = false
+                            }
+                        }
+                        MessageDialog {
+                            id: messageDialog_mask
+                            title: "Info"
+                            text: "Mask is not found"
+                            icon: StandardIcon.Critical
+                            Component.onCompleted: visible = false
+                        }
                         onFindMask: {
                             console.log("attemt to find mask")
-                            rectI.findMask()
+                            if (typeof maskmodel !== "undefined") {
+                                    var mname = Tipcagent.getshortMaskName(fileName,
+                                                                           maskmodel.folder)
+                                    if (mname.length !== 0) {
+                                        var res = maskmodel.indexOf(mname)
+                                        currchecked = (res !== -1)
+                                        if (!currchecked)
+                                            messageDialog_mask.open()
+                                        console.log("attemt to find mask", mname, "by image:", fileName, " result:",res)
+                                        res = maskmodel.get(0,"fileName")
+                                    }
+                                    else {
+                                        currchecked = false
+                                        messageDialog_mask.open()
+                                    }
+                            }
+                            else {
+                                currchecked = false
+                                messageDialog_mask.open()
+                            }
                         }
+                        onShowImage: {
+                            if (delegfname == "") {
+                                imgdialog_title = "intro"
+                                imgdialog_fname = "qrc:///images/intro.png"
+                            }
+                            else {
+                                imgdialog_title = delegfname
+                                imgdialog_fname = "image://colors/" + imgdialog_title
+                            }
+                            imgdialog.show()
+                        }
+                        onCvtNames: {
+                            Tipcagent.convertFiles();
+                            indicon();
+                        }
+                        MessageDialog {
+                            id: messageDialog_notsend
+                            title: "Error"
+                            text: "Data is not sent"
+                            //icon: StandardIcon.Critical
+                            Component.onCompleted: visible = false
+                        }
+                        onSendMessage: {
+                                if (typeof maskmodel !== "undefined") {
+                                    var res = Tipcagent.sendString(delegfname,
+                                                         modelfolder,
+                                                         maskmodel.folder,
+                                                         currchecked);
+                                    if (!res)
+                                        messageDialog_notsend.open()
+                                }
+                                indicon();
+                        }
+
                         MouseArea {
                             property string oldcolor: ""
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             hoverEnabled: true
                             propagateComposedEvents: true
-                            onDoubleClicked: sendMessage()
+                            onDoubleClicked: sendMessage(currdelegfname)
                             onEntered: ishovered = true
                             onExited: ishovered = false
                             onPressed:      {
                                 if (mouse.button === Qt.RightButton) {
-                                    ctxMenu.popup()
+                                    if (typeof(ctxMenu) !== "undefined")
+                                        ctxMenu.popup()
                                 }
                                 else {
                                     lview.currentIndex = index
                                 }
-                                oldcolor = "lightyellow"
+                                oldcolor = TStyle.list_select
                             }
                         }
-                        onCurdelegfnameChanged: {
+                        onCurrdelegfnameChanged: {
                             if (ListView.isCurrentItem) {
-                                if (curdelegfname == "") {
+                                if (currdelegfname == "") {
                                     imgdialog_title = "intro"
                                     imgdialog_fname = "qrc:///images/intro.png"
                                 }
                                 else {
-                                    imgdialog_title = curdelegfname
+                                    imgdialog_title = currdelegfname
                                     imgdialog_fname = "image://colors/" + imgdialog_title
                                 }
                             }
                         }
-
                     }
                 } // Component
             } // ListView

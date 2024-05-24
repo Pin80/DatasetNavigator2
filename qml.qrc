@@ -16,6 +16,9 @@
         <file>qml/TScrollBar.qml</file>
         <file>qml/TDelegate_img.qml</file>
         <file>qml/TDelegate_msk.qml</file>
+        <file>qml/TStyle.qml</file>
+        <file>qml/TBusyIndicator.qml</file>
+        <file>qml/TContextMenu.qml</file>
     </qresource>
     <qresource prefix="/images"/>
 </RCC>

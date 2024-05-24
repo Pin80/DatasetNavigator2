@@ -49,12 +49,13 @@ TZMQIPC * TZMQIPC::getInstance(QQmlEngine *engine,
                              TBroker* _broker,
                              QProcess * _proc,
                              ZMQBackend* _zb,
+                             TConverter* _cvt,
                              ColorImageProvider* _cvp)
 {
     Q_UNUSED(engine)
     Q_UNUSED(scriptEngine)
     const QJsonDocument _jsonDoc;
-    static TZMQIPC * pinstance = new TZMQIPC(_broker, _proc, _zb,  nullptr);
+    static TZMQIPC * pinstance = new TZMQIPC(_broker, _proc, _zb, _cvt, nullptr);
     //m_instance = pinstance;
     return pinstance;
 }
@@ -94,27 +95,22 @@ void TZMQIPC::closeWindow()
 }
 
 bool TZMQIPC::sendString(const QString& fname,
-                            const QString& path,
-                            const QString& maskpath,
+                            const QUrl& path,
+                            const QUrl& maskpath,
                             const bool foundMask)
 {
-        QString newpath = path;
+        QString newpath = path.toLocalFile();
         //  Now broadcast exactly 1M updates followed by END
-        QStringList partspath = path.split("file://");
-        if (partspath.size() > 1)
-        {
-            newpath = partspath[1];
-        }
         QString maskname = "";
         if (foundMask)
         {
-            maskname = getMaskName(fname, maskpath);
+            maskname = getMaskName(fname, maskpath.toString());
             //qDebug() << "fn" << fname;
         }
         QString fullname = newpath + "/" + fname + "*" + maskname;
         const char * tmpstr = fullname.toUtf8().data();
         emit sig_sendString(fullname);
-        qDebug() << "send:" << fullname << " with maskname: " << maskname;
+        qDebug() << "send:" << fullname;
         return true;
 }
 
@@ -177,12 +173,18 @@ QUrl TZMQIPC::getshortMaskName(const QString& fname,
     return QString();
 }
 
+void TZMQIPC::convertFiles()
+{
+    emit sig_cvtFileNames();
+}
+
 
 TZMQIPC::TZMQIPC(TBroker* _broker,
                  QProcess * _proc,
                  ZMQBackend* _zb,
+                 TConverter* _cvt,
                  QObject *parent)
-    : QObject(parent), m_broker(_broker), m_pyprocess(_proc), m_zb(_zb)
+    : QObject(parent), m_broker(_broker), m_pyprocess(_proc), m_zb(_zb), m_cvt(_cvt)
 {
     try
     {
@@ -240,11 +242,14 @@ TZMQIPC::TZMQIPC(TBroker* _broker,
             connect(m_zb, SIGNAL(unboundSocket(bool)), this, SIGNAL(unboundSocket(bool)));
             connect(m_zb, SIGNAL(sentString(bool)), this, SIGNAL(sentString(bool)));
             connect(m_zb, SIGNAL(recvString(QUrl)), this, SIGNAL(recvString(QUrl)));
+            connect(m_cvt, SIGNAL(converted(bool)), this, SIGNAL(converted(bool)));
             connect(this, SIGNAL(sig_bindSocket()), m_zb, SLOT(onBindSocket()));
             connect(this, SIGNAL(sig_unbindSocket()), m_zb, SLOT(onUnbindSocket()));
             connect(this, SIGNAL(sig_sendString(QString)), m_zb, SLOT(onSendString(QString)));
+            connect(this, SIGNAL(sig_cvtFileNames()), m_cvt, SLOT(onStartConvert()));
+
         }
-        QObject::connect(this,SIGNAL(fldChanged(QString)),m_broker,SIGNAL(ifldChanged(QString)));
+        QObject::connect(this, SIGNAL(fldChanged(QString)), m_broker, SIGNAL(ifldChanged(QString)));
     }
     catch (const std::runtime_error& _err)
     {

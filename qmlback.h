@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <QObject>
-#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
 #include <QtDebug>
@@ -19,57 +18,8 @@
 #include <QQmlComponent>
 #include <QQmlContext>
 
-#include "zmqtopy.h"
-
-class TBroker : public QObject
-{
-    Q_OBJECT
-public:
-    TBroker()
-    {
-        QJsonParseError parseError;
-        QJsonDocument jsonDoc;
-        QFile fin("settings.json");
-        fin.open(QIODevice::ReadOnly);
-        if (!fin.isOpen())
-        {
-            qCritical() << "settings file is not found";
-            return;
-        }
-        QByteArray ba = fin.readAll();
-        jsonDoc = QJsonDocument::fromJson(ba, &parseError);
-        if (parseError.error != QJsonParseError::NoError)
-        {
-            qCritical() << "Parse error at" << parseError.offset << ":" << parseError.errorString();
-            return;
-        }
-        if (jsonDoc.isNull() || jsonDoc.isEmpty() || !jsonDoc.isObject())
-        {
-            qCritical() << "No settings is found in settings.json";
-            return;
-        }
-        m_jsonObj = jsonDoc.object();
-    }
-    Q_PROPERTY(QString imgfolder READ getIFolder WRITE setIFolder NOTIFY ifldChanged)
-    QString getIFolder() const
-    {
-        return m_ifolder;
-    }
-    void setIFolder(QString _fld)
-    {
-        m_ifolder = _fld;
-    }
-    QJsonObject& getSettings()
-    {
-        return m_jsonObj;
-    }
-signals:
-    void ifldChanged(QString);
-private:
-    QString m_ifolder;
-    QJsonObject m_jsonObj;
-
-};
+#include "broker.h"
+#include <fileconverter.h>
 
 class ColorImageProvider : public QObject, public QQuickImageProvider
 {
@@ -96,6 +46,7 @@ public:
                                  TBroker *_broker,
                                  QProcess * _proc,
                                  ZMQBackend* _zb,
+                                 TConverter *_cvt,
                                  ColorImageProvider* _cvp);
 
     Q_PROPERTY(QString jsuffix READ getSufText NOTIFY sufChanged)
@@ -110,8 +61,8 @@ public:
     Q_INVOKABLE void closeWindow();
 
     Q_INVOKABLE bool sendString(const QString& fname,
-                                const QString& path,
-                                const QString& maskpath,
+                                const QUrl& path,
+                                const QUrl& maskpath,
                                 const bool foundMask);
     Q_INVOKABLE bool foundMaskName(const QString& fname,
                                    const QString& path);
@@ -121,14 +72,17 @@ public:
 
     Q_INVOKABLE QUrl getshortMaskName(const QString& fname,
                                          const QString& path);
+    Q_INVOKABLE void convertFiles();
 signals:
     void sig_bindSocket();
     void sig_unbindSocket();
     void sig_sendString(QString);
+    void sig_cvtFileNames();
     void boundSocket(bool result);
     void unboundSocket(bool result);
     void sentString(bool result);
     void recvString(QUrl result);
+    void converted(bool result);
     void urlChanged();
     void sufChanged();
     void folderSet(QString);
@@ -143,9 +97,11 @@ private:
     QString m_maskfolder;
     QProcess * m_pyprocess = nullptr;
     ZMQBackend* m_zb = nullptr;
+    TConverter* m_cvt = nullptr;
     explicit TZMQIPC(TBroker* _broker,
                      QProcess * _proc,
                      ZMQBackend* _zb,
+                     TConverter* _cvt,
                      QObject *parent = nullptr);
     ~TZMQIPC();
     explicit TZMQIPC() = delete;

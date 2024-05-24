@@ -40,6 +40,7 @@ QObject* getInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
                                           initstruct.broker.get(),
                                           initstruct.pyprocess.get(),
                                           initstruct.zbackend.get(),
+                                          initstruct.fbackend.get(),
                                           initstruct.prov.get());
     return inst;
 }
@@ -71,11 +72,17 @@ bool init(QQmlApplicationEngine& _engine)
     initstruct.pyprocess->waitForStarted();
     #endif
     initstruct.zbackend.reset(new ZMQBackend(urlpc, urlcp));
+    QObject::connect(initstruct.broker.get(), SIGNAL(processTasks()),
+                     initstruct.zbackend.get(), SLOT(processZMQpool()) );
+    initstruct.fbackend.reset((new TConverter(initstruct.broker.get())));
+    QObject::connect(initstruct.broker.get(), SIGNAL(processTasks()),
+                     initstruct.fbackend.get(), SLOT(doconvert()));
     initstruct.prov.reset( new ColorImageProvider(initstruct.broker.get()));
     _engine.addImageProvider( QLatin1String("colors"), initstruct.prov.release() );
     (void)qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
                                       "Tipcagent",
                                       getInstance);
+    qmlRegisterSingletonType(QUrl("qrc:///qml/TStyle.qml"), "GlobalProp", 1, 0, "TStyle");
     #ifdef QT_DEBUG
     _engine.rootContext()->setContextProperty("QT_DEBUG", QVariant(true));
     #else

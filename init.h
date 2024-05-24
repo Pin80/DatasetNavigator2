@@ -4,6 +4,7 @@
 #include <QErrorMessage>
 #include "qmlback.h"
 #include "zmqtopy.h"
+#include <fileconverter.h>
 
 void messageHandler(QtMsgType type,
                     const QMessageLogContext &context,
@@ -17,6 +18,7 @@ struct TInit
     std::unique_ptr<ColorImageProvider> prov;
     QScopedPointer< QProcess > pyprocess;
     QScopedPointer<ZMQBackend> zbackend;
+    QScopedPointer<TConverter> fbackend;
 };
 
 extern TInit initstruct;

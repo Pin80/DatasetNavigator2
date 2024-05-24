@@ -1,19 +1,16 @@
 import QtQuick 2.12
-import QtQuick.Controls 2.2
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles  1.4
 import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
-import Qt.labs.folderlistmodel  2.0
 import QtGraphicalEffects 1.12
+import GlobalProp 1.0
 
 Item {
-    id: fldButtonPanel
-    property string panel_folder: ""
-    property string panel_maskfolder: ""
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
-    readonly property int fldButtonPanrlHeight: 120*scaleky
+    property alias panel_folder: dirdialog_orig.folder
+    property alias panel_maskfolder: dir_mdialogM.folder
+    readonly property int fldButtonPanrlHeight: 120*TStyle.scaleky
     signal updatelists();
     ColumnLayout {
         anchors.fill: parent
@@ -21,7 +18,7 @@ Item {
         anchors.margins: 2
         TButton_gradient {
             id: btn_selectdir
-            text: "Image Folder"
+            btntext: qsTr("Image Folder")
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
@@ -29,9 +26,7 @@ Item {
             TFileDialog {
                 id: dirdialog_orig
                 onAccepted: {
-                    panel_folder = folder
                     console.log("folder")
-                    console.log(Tipcagent.folder)
                 }
             }
             MouseArea {
@@ -40,7 +35,6 @@ Item {
                 onClicked: {
                     console.log("folder dialog called")
                     dirdialog_orig.title = "Please choose a image folder"
-                    dirdialog_orig.folder = "/home/user"
                     dirdialog_orig.open()
                 }
                 onEntered: btn_selectdir.is_hovered = true;
@@ -52,7 +46,7 @@ Item {
         }
         TButton_gradient {
             id: btn_selectmdir
-            text: "Mask Image Folder"
+            btntext: qsTr("Mask Image Folder")
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
@@ -60,7 +54,6 @@ Item {
             TFileDialog {
                 id: dir_mdialogM
                 onAccepted: {
-                    panel_maskfolder = folder
                     dir_mdialogM.close()
                 }
             }
@@ -69,7 +62,6 @@ Item {
                 hoverEnabled: true
                 onClicked: {
                     dir_mdialogM.title = "Please choose a mask folder"
-                    dir_mdialogM.folder = "/home/user"
                     dir_mdialogM.open()
                 }
                 onEntered: btn_selectmdir.is_hovered = true;
@@ -80,7 +72,7 @@ Item {
         }
         TButton_gradient {
             id: btn_update
-            text: "Update lists"
+            btntext: qsTr("Update lists")
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight

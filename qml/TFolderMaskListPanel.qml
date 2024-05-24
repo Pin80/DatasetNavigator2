@@ -1,17 +1,15 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles  1.4
 import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
+import GlobalProp 1.0
 
 Item {
-    id: rectM
     property alias modelfolder: folderMaskModel.folder
     property alias mmodel : folderMaskModel
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
     FolderListModel {
         id: folderMaskModel
         //nameFilters: ["*.*"]
@@ -26,7 +24,7 @@ Item {
         ScrollView {
             id: flickableMask
             anchors.fill: parent
-            anchors.rightMargin: 20
+            anchors.rightMargin: 20*TStyle.scalekx
             focus: true
             ScrollBar.vertical: TScrollBar {
                 id: lmscrollbar
@@ -60,10 +58,10 @@ Item {
                         anchors.right: parent.right
                         anchors.margins: 0*(height/25)
                         anchors.rightMargin: 3*(height/25)
-                        height: scaleky*25
-                        property string calcincolor: (index%2 == 0)? "lightblue": "lightgreen"
-                        property string currcolor: ListView.isCurrentItem ? "lightyellow" : calcincolor
-                        readonly property string currcolorH: "yellow"
+                        height: TStyle.scaleky*25
+                        property string calcincolor: (index%2 == 0)? TStyle.list_odd: TStyle.list_even
+                        property string currcolor: ListView.isCurrentItem ? TStyle.list_select : calcincolor
+                        readonly property string currcolorH: TStyle.indicator_hovered
                         property string currcolorhov: ishovered ? currcolorH : currcolor
                         color: currcolorhov
                         MouseArea{
@@ -72,9 +70,6 @@ Item {
                             propagateComposedEvents: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             property string oldcolor: ""
-                            onClicked: {
-
-                            }
                             onEntered: {
                                 ishovered = true
                             }
@@ -82,7 +77,7 @@ Item {
                                 ishovered = false
                             }
                             onPressed:      {
-                                oldcolor = "lightyellow"
+                                oldcolor = TStyle.list_select
                                 if (mouse.button === Qt.RightButton) {
 
                                 }

@@ -34,13 +34,13 @@ public slots:
     void terminateZMQ_pool();
 public slots:
     void processFinished(int _code, QProcess::ExitStatus);
+    void processZMQpool();
 signals:
     void boundSocket(bool);
     void unboundSocket(bool);
     void sentString(bool);
     void recvString(QUrl);
 private:
-    QFuture<void> m_future;
     void * m_context = nullptr;
     void * m_publisher = nullptr;
     void * m_subscriber = nullptr;
@@ -48,7 +48,6 @@ private:
     bool m_isbound = false;
     QString m_puburl;
     QString m_suburl;
-    bool m_isrunning = false;
     char m_message[256];
     bool m_isError = false;
     bool m_bindTrigger = false;
@@ -57,7 +56,6 @@ private:
     QString m_sentStr;
     QMutex m_lock;
     void startZMQpool();
-    void processZMQpool();
     void stopZMQpool();
 };
 

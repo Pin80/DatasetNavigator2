@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
         qInstallMessageHandler(messageHandler);
         #endif
         qInfo() << "Qt version is:" << QT_VERSION_STR;
-        if ( (QT_VERSION_MAJOR < 5) || (QT_VERSION_MINOR < 10))
+        if ( (QT_VERSION_MAJOR < 5) || (QT_VERSION_MINOR < 12))
         {
             qCritical() << "Qt version is not compitable:";
             return -1;
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
             initstruct.pyprocess->closeWriteChannel();
             initstruct.pyprocess->waitForFinished(1000);
         }
+        initstruct.broker.reset();
         qInfo() << "DN Application is terminated";
         return result;
     }

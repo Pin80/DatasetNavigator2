@@ -1,40 +1,44 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles  1.4
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
-import Qt.labs.folderlistmodel  2.0
 import QtQuick.Window 2.12
 import Qt.labs.platform 1.1
 import ipc.zmq 1.0
+import GlobalProp 1.0
 
-
-Window {
+ApplicationWindow {
     id: mainapp
     visible: true
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
-    width: scalekx*320
-    height: scaleky*480
-    color: "green"
+    width: TStyle.scalekx*320
+    height: TStyle.scaleky*480
+    minimumWidth: TStyle.scalekx*320
+    minimumHeight: TStyle.scalekx*240
+    color: TStyle.background
     title: qsTr("Dataset Navigator")
-    //console.log(folder)
     signal maskboxChanged();
     onClosing: {
         Tipcagent.closeWindow()
     }
-    // Под Gnome не работает
-    /*
-    SystemTrayIcon {
-        visible: true
-        iconSource:  "qrc:/images/favicon_s.png"
-        onActivated: {
-            mainapp.show()
-            mainapp.raise()
-            mainapp.requestActivate()
+    Popup {
+        id: popupwnd
+        anchors.centerIn: parent
+        closePolicy: Popup.NoAutoClose
+        modal: true
+        focus: true
+        visible: pactivate
+        parent: mainapp.contentItem
+        property bool pactivate: false
+        TBusyIndicator {
+            id: busyindic
+            running: popupwnd.pactivate
+            anchors.fill: parent
+            anchors.centerIn: parent
+            width: 100*TStyle.scalekx
+            height: 100*TStyle.scalekx
         }
     }
-    */
 
     ColumnLayout {
         spacing: 2
@@ -45,22 +49,31 @@ Window {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
-            Layout.preferredHeight: scaleky*60
-            Layout.maximumHeight: scaleky*120
+            Layout.preferredHeight: TStyle.scaleky*60
+            Layout.maximumHeight: TStyle.scaleky*120
             onPanel_folderChanged: {
+                popupwnd.pactivate = true
                 folderlistpanel.modelfolder = panel_folder
                 Tipcagent.folder = panel_folder
+                popupwnd.pactivate = false
             }
             onPanel_maskfolderChanged: {
+                popupwnd.pactivate = true
                 Tipcagent.maskfolder = panel_folder
                 foldermasklistpanel.modelfolder = panel_maskfolder
+                var ifolder = folderlistpanel.modelfolder
+                folderlistpanel.modelfolder = "./none"
+                folderlistpanel.modelfolder = ifolder
+                popupwnd.pactivate = false
             }
             onUpdatelists: {
+                popupwnd.pactivate = true
                 console.log("update")
                 var ifolder = folderlistpanel.modelfolder
                 var mfolder = foldermasklistpanel.modelfolder
                 folderlistpanel.modelfolder = "./none"
                 folderlistpanel.modelfolder = ifolder
+                popupwnd.pactivate = false
             }
         }
         TTogglePanel {
@@ -68,28 +81,32 @@ Window {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignTop
-            Layout.preferredHeight: scaleky*20
-            Layout.maximumHeight: scaleky*30
-            Layout.minimumHeight: scaleky*30
+            Layout.preferredHeight: TStyle.scaleky*20
+            Layout.maximumHeight: TStyle.scaleky*30
+            Layout.minimumHeight: TStyle.scaleky*30
             onSig_bind: { 
+                popupwnd.pactivate = true
                 Tipcagent.sig_bindSocket()
             }
             onSig_unbind: {
+                popupwnd.pactivate = true
                 Tipcagent.sig_unbindSocket()
             }
 
             function onUnboundSocket(result) {
                 if (result) {
                     isBound = false
-                    sbartxt.text = "socket is unbound"
+                    sbartxt.text = qsTr("socket is unbound")
                 }
+                popupwnd.pactivate = false
             }
 
             function onBoundSocket(result) {
                 if (result) {
                     isBound = true
-                    sbartxt.text = "socket is bound"
+                    sbartxt.text = qsTr("socket is bound")
                 }
+                popupwnd.pactivate = false
             }
             Connections {
                 target: Tipcagent
@@ -118,13 +135,20 @@ Window {
                     }
                 }
             }
+            Connections {
+                target: Tipcagent
+                onConverted: {
+                    console.log("converted:", result)
+                    popupwnd.pactivate = false
+                }
+            }
         }
         SwipeView {
             id: swipelist
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredHeight: scaleky*40
+            Layout.preferredHeight: TStyle.scaleky*40
             currentIndex: togglepanel.toggle_im ? 0: 1
             onCurrentIndexChanged: {
                 togglepanel.toggle_im = (currentIndex == 0)? true: false
@@ -133,56 +157,9 @@ Window {
             TFolderListPanel {
                 id: folderlistpanel
                 objectName: "folderlistpanel" // unused
-                //property var modelmask: foldermasklistpanel.mmodel
-                onCheckMaskTest: {
-                    if (typeof foldermasklistpanel.mmodel !== "undefined") {
-                            var mname = Tipcagent.getshortMaskName(curdelegfname,
-                                                                   foldermasklistpanel)
-                            if (mname.length !== 0) {
-                                var res = foldermasklistpanel.mmodel.indexOf(mname)
-                                currchecked = (res !== -1)
-                            }
-                            else {
-                                currchecked = false
-                            }
-                    }
-                    else {
-                        currchecked = false
-                    }
-                }
-                onFindMask: {
-                    console.log("attemt to find mask")
-                    if (typeof foldermasklistpanel.mmodel !== "undefined") {
-                            var mname = Tipcagent.getshortMaskName(curdelegfname,
-                                                                   foldermasklistpanel.modelfolder)
-                            if (mname.length !== 0) {
-                                var res = foldermasklistpanel.mmodel.indexOf(mname)
-                                currchecked = (res !== -1)
-                                res = foldermasklistpanel.mmodel.get(0,"fileName")
-                            }
-                            else {
-                                currchecked = false
-                            }
-                    }
-                    else {
-                        currchecked = false
-                    }
-                }
-                MessageDialog {
-                    id: messageDialog_notsend
-                    title: "Error"
-                    text: "Data is not sent"
-                    //icon: StandardIcon.Critical
-                    Component.onCompleted: visible = false
-                }
-                onSendMessage: {
-                    var res = Tipcagent.sendString(curdelegfname,
-                                         modelfolder,
-                                         foldermasklistpanel.modelfolder,
-                                         currchecked);
-                    if (!res)
-                        messageDialog_notsend.open()
-                }
+                maskmodel: foldermasklistpanel.mmodel;
+                onIndicon: popupwnd.pactivate = true
+
 
             }
             TFolderMaskListPanel {
@@ -194,10 +171,10 @@ Window {
             id : statusbar
             Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
-            Layout.preferredHeight: scaleky*30
-            border.color: "black"
+            Layout.preferredHeight: TStyle.scaleky*30
+            border.color: TStyle.background_border
             border.width: 1
-            color: "gray"
+            color: TStyle.background_small
             Text {
                 id: sbartxt
                 anchors.fill: parent
@@ -205,7 +182,7 @@ Window {
                 anchors.leftMargin: 5
                 focus: true
                 font.family: "Helvetica"
-                font.pointSize: 14*scaleky
+                font.pointSize: 14*TStyle.scaleky
                 text: "socket is unbound"
                 color: "black"
             }
@@ -226,5 +203,4 @@ Window {
         console.log("default mfolder:", urlfolder )
 
     }
-
 } //ApplicationWindow

@@ -1,21 +1,21 @@
-import QtQuick 2.9
-import QtQuick.Controls 2.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
-import Qt.labs.folderlistmodel 2.0
 import QtQuick.Window 2.0
+import GlobalProp 1.0
 
 Window{
-    id: imageDialog
-    title: "Image"
-    color: "brown"
+    id: imgwnd
+    title: qsTr("Image")
+    color: TStyle.background_small
     visible: false
     property string fname: ""
-    property alias iwidth:image_frame.sourceSize.width
-    property alias iheight:image_frame.sourceSize.height
-    width: iwidth + 20
-    height: iheight + 20
+    property alias iwidth: imgwnd.width
+    property alias iheight: imgwnd.height
+    minimumWidth: 100*TStyle.scalekx
+    minimumHeight: 100*TStyle.scaleky
     ColumnLayout {
         anchors.fill: parent
         Rectangle {
@@ -23,22 +23,25 @@ Window{
             Layout.alignment: Qt.AlignCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
-            color: "green"
-            border.color: "black"
+            color: TStyle.background
+            border.color: TStyle.background_border
             border.width: 2
-            radius: (10*(image_frame.width + image_frame.height))/350
+            width: parent.width*0.9
+            height: parent.height*0.9
+            radius: TStyle.scalekx*(10*(image_frame.width + image_frame.height))/350
             Image {
                 id: image_frame
                 anchors.fill: parent
-                anchors.margins: (imageDialog.width/350)*10
+                anchors.margins: (iwidth/350)*10
                 horizontalAlignment: Image.AlignHCenter
                 verticalAlignment: Image.AlignVCenter
                 fillMode: Image.PreserveAspectFit
                 autoTransform: true
                 Layout.alignment: Qt.AlignHCenter
-                source: imageDialog.fname
+                source: fname
                 scale: Qt.KeepAspectRatio
-
+                sourceSize.width: width
+                sourceSize.height: height
             }
         }
     }

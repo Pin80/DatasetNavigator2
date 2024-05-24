@@ -10,7 +10,6 @@ ZMQBackend::ZMQBackend(QString _puburl, QString _suburl)
         qCritical() << "error in ZMQBackend (zmq_ctx_new)";
         m_isError = true;
     }
-    m_future = QtConcurrent::run(this, &ZMQBackend::processZMQpool);
 }
 
 bool ZMQBackend::isBound() const
@@ -82,11 +81,6 @@ void ZMQBackend::terminateZMQ_pool()
 {
     if (m_isbound)
         stopZMQpool();
-    if (m_isrunning)
-    {
-        m_isrunning = false;
-        m_future.waitForFinished();
-    }
     if (m_context)
     {
         int rc = zmq_ctx_destroy(m_context);
@@ -173,6 +167,7 @@ void ZMQBackend::startZMQpool()
         m_isError = true;
         return;
     }
+    memset(m_message, 0, 256);
     emit boundSocket(result);
     return;
 }
@@ -184,61 +179,55 @@ void ZMQBackend::processZMQpool()
         qCritical() << "error in processZMQpool";
         return;
     }
-    m_isrunning = true;
     QString str;
-    memset(m_message, 0, 256);
-    while(m_isrunning)
+
+    if ((!m_isError) && (m_isbound))
+    {
+        int rc = zmq_recv(m_subscriber, m_message, 256, ZMQ_NOBLOCK);
+        if (rc != -1)
+        {
+            //EAGAIN
+            str = m_message;
+            str = "file:" + str;
+            qDebug() << "recvcpp:" << str;
+            memset(m_message, 0, 256);
+            emit recvString(QUrl(str));
+        }
+    }
+    if ((!m_isError) && (!m_isbound) && (m_bindTrigger))
+    {
+        startZMQpool();
+        m_lock.lock();
+        m_bindTrigger = false;
+        m_lock.unlock();
+    }
+    if ((!m_isError) && (m_isbound) && (m_unbindTrigger))
+    {
+        stopZMQpool();
+        m_lock.lock();
+        m_unbindTrigger = false;
+        m_lock.unlock();
+    }
+    if ((!m_isError) && (m_isbound) && (m_sendTrigger))
     {
 
-        if ((!m_isError) && (m_isbound))
+        int rc = s_send (m_publisher, m_sentStr.toUtf8().data());
+        if (rc == -1)
         {
-            int rc = zmq_recv(m_subscriber, m_message, 256, ZMQ_NOBLOCK);
-            if (rc != -1)
-            {
-                //EAGAIN
-                str = m_message;
-                str = "file:" + str;
-                qDebug() << "recvcpp:" << str;
-                memset(m_message, 0, 256);
-                emit recvString(QUrl(str));
-            }
+            qCritical() << "error in processZMQpool (send):" << zmq_errno();
+            m_isError = true;
+            emit sentString(false);
         }
-        if ((!m_isError) && (!m_isbound) && (m_bindTrigger))
+        else
         {
-            startZMQpool();
-            m_lock.lock();
-            m_bindTrigger = false;
-            m_lock.unlock();
+            qInfo() << "send:" << m_sentStr.toUtf8().data();
+            emit sentString(true);
         }
-        if ((!m_isError) && (m_isbound) && (m_unbindTrigger))
-        {
-            stopZMQpool();
-            m_lock.lock();
-            m_unbindTrigger = false;
-            m_lock.unlock();
-        }
-        if ((!m_isError) && (m_isbound) && (m_sendTrigger))
-        {
-
-            int rc = s_send (m_publisher, m_sentStr.toUtf8().data());
-            if (rc == -1)
-            {
-                qCritical() << "error in processZMQpool (send):" << zmq_errno();
-                m_isError = true;
-                emit sentString(false);
-            }
-            else
-            {
-                qInfo() << "send:" << m_sentStr.toUtf8().data();
-                emit sentString(true);
-            }
-            m_lock.lock();
-            m_sendTrigger = false;
-            m_lock.unlock();
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        m_lock.lock();
+        m_sendTrigger = false;
+        m_lock.unlock();
     }
+
 }
 
 void ZMQBackend::stopZMQpool()

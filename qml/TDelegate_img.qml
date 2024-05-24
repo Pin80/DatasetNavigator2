@@ -5,56 +5,26 @@ import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.12
+import GlobalProp 1.0
 
 Rectangle{
-    id: itembox
     property alias delegfname: litem_text.text
     property alias currchecked : maskbox.checked
     signal checkMaskTest()
     signal findMask()
+    signal showImage()
+    signal cvtNames()
     property var ctxMenu : contextMenu
     //https://bugreports.qt.io/browse/QTBUG-106645
-    readonly property real scalekx: (Screen.desktopAvailableWidth/1920)
-    readonly property real scaleky: (Screen.desktopAvailableHeight/1080)
-    property int imgwidth: 350*scalekx
-    property int imgheight: 350*scaleky
-    border.color: "blue"
+    border.color: TStyle.background_border
     border.width: 1
-    property string imgdialog_title: "intro"
-    property string imgdialog_fname: "qrc:///images/intro.png"
+
     property bool ishovered : false
-    TImgDialog {
-        id : imgdialog
-        iwidth: itembox.imgwidth
-        iheight: itembox.imgheight
-        title: imgdialog_title
-        fname: imgdialog_fname
-    }
-    Menu {
+    TContextMenu {
         id: contextMenu
-        MessageDialog {
-            id: messageDialog_mask
-            title: "Info"
-            text: "Mask is not found"
-            icon: StandardIcon.Critical
-            Component.onCompleted: visible = false
-        }
-        MenuItem {
-            id: ctxMenuItem_ishow
-            text: "show"
-            background: Rectangle {
-                color: ctxMenuItem_ishow.hovered?"yellow":"pink"
-            }
-            onClicked:  imgdialog.show()
-        }
-        MenuItem {
-            id: ctxMenuItem_check
-            text: "find mask"
-            background: Rectangle {
-                color: ctxMenuItem_check.hovered?"yellow":"pink"
-            }
-            onClicked:  findMask()
-        }
+        Action { text: qsTr("Show image"); onTriggered: showImage() }
+        Action { text: qsTr("Find mask image file"); onTriggered: findMask() }
+        Action { text: qsTr("Convert all file names"); onTriggered: cvtNames() }
     }
 
     RowLayout{
@@ -63,7 +33,8 @@ Rectangle{
         Text {
             id: litem_text
             Layout.leftMargin: font.pointSize
-            font.pointSize: scaleky*12
+            font.pointSize: TStyle.scaleky*12
+            color: TStyle.list_text
             Layout.alignment: Qt.AlignVCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -83,5 +54,4 @@ Rectangle{
         }
 
     }
-
 }
