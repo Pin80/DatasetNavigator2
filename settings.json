@@ -3,7 +3,7 @@
         "zmqurlpc" : "tcp://127.0.0.1:5561",
 	"default_width" : 640,
         "default_height" : 320,
-        "manual" : "manual.html",
+        "manual" : "./doc/manual.html",
         "scolor" : [0, 0, 255],
         "fcolor" : [0, 255, 0],
         "ccolor" : [255, 0, 0],

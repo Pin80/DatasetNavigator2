@@ -22,7 +22,6 @@ from logging import Formatter
 import re
 import os
 import time 
-import signal 
 
 DEFAULT_MASKNAME = "mask_original.png"
 DEFAULT_LOGNAME = "annot_tool.log"
