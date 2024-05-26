@@ -4,38 +4,93 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 	<title></title>
 	<meta name="generator" content="LibreOffice 7.3.7.2 (Linux)"/>
-	<meta name="created" content="2024-05-04T09:31:09.806151164"/>
+	<meta name="created" content="2024-05-26T10:12:25.387739562"/>
 	<meta name="changed" content="00:00:00"/>
 	<style type="text/css">
 		@page { size: 210.01mm 297mm; margin: 20mm }
-		p { line-height: 115%; margin-bottom: 2.47mm; background: transparent }
+		p { line-height: 115%; margin-bottom: 2.47mm; background: transparent; background: transparent }
 		a:link { color: #000080; text-decoration: underline }
 		a:visited { color: #800000; text-decoration: underline }
 	</style>
 </head>
-<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><p align="center" style="line-height: 100%; margin-top: 4.23mm; margin-bottom: 2.12mm; page-break-after: avoid">
-<font face="Liberation Sans, sans-serif"><font size="6" style="font-size: 28pt"><b>Annotation
-tool</b></font></font></p>
+<body lang="ru-RU" link="#000080" vlink="#800000" dir="ltr"><p align="center" style="line-height: 100%; margin-top: 4.23mm; margin-bottom: 2.12mm; page-break-after: avoid">
+<font face="Liberation Sans, sans-serif"><font size="6" style="font-size: 28pt"><b>Dataset
+Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font></font></p>
+<p>Описание:</p>
+<p>Приложение состоит из двух частей 
+</p>
+<p>1)Dataset Navigator : Показывает имена и файлы
+изображений и их маски, находит связь
+изображение и маски(показывая галочку
+на строке с именем файла), передает
+выбранное  изображение (и маску когда
+установлена связь) в Annotation tool, а также
+другие функции</p>
+<p>2)Annotation tool: Рисует маску для изображения,
+с помощь выбранного инструмента и
+выбранного значения маркера, ее
+временное(замарозка) и постоянное
+сохранение, а также другие функции</p>
+<p>Установка:</p>
+<p>TODO (раздел пока не готов)</p>
+<p>Зависимости:</p>
+<ol>
+	<li><p>Qt ( 5.12 – 5.15) (c++)</p>
+	<li><p>zeromq (c и python bindings)</p>
+	<li><p>opencv ( cv2 python)</p>
+	<li><p>Numpy (python)</p>
+	<li><p>python standard library: threading (python), json, glob, re</p>
+	<li><p>PIL (python)</p>
+	<li><p>в будущем: matplotlib (python)</p>
+	<li><p>scipy (python)</p>
+</ol>
 <p><br/>
 <br/>
 
 </p>
-<p>Установка:</p>
-<p>Зависимости:</p>
-<ol>
-	<li><p>Qt ( рекомендуется 5.12) (c++</p>
-	<li><p>zeromq (c и python bindings)</p>
-	<li><p>opencv ( cv2 python)</p>
-	<li><p>Numpy (python)</p>
-	<li><p>threading (python)</p>
-	<li><p>PIL (python)</p>
-	<li><p>matplotlib (python)</p>
-	<li><p>scipy (python)</p>
-	<li><p>glob</p>
-	<li><p>json</p>
-</ol>
+<p>Пользовательский интерфейс Annotation
+tool:</p>
 <p>Горячие клавиши:</p>
-<p>	h - помощь</p>
+<p>h — вызов справки</p>
+<p>v — сменить вид (Canny → original)</p>
+<p>s — заморозка, т.&nbsp;е. Наложение на
+слой замороженной маски(изначально
+пустой) слоя текущей(временной) маски 
+(слой замороженной маски подсвечивается
+салатовым, а не замороженной красным)</p>
+<p>f — сохрание маски (с уведомлением
+Dataset Navigator)</p>
+<p>r — сброс маски (стирание как слоя
+временной маски так и замороженной)</p>
+<p>c — сброс слоя временной маски 
+</p>
+<p>p — рисовать полигон (нужно минимум
+три точки)</p>
+<p>o — удаление контура для отрисовки
+полигона</p>
+<p>m — сдвиг курсора (для доступности
+рисования в углах)</p>
+<p>esc - выход</p>
 <p>Трекбары:</p>
+<p>class# - значение того кода, которым будет
+рисоваться маска</p>
+<p>width# - ширина пятна рисования/стирания</p>
+<p>min#, max# - параметры фильтра Canny</p>
+<p>tool# - выбор инструмента</p>
+<p>Инструменты:</p>
+<p>0 — нет инструмента</p>
+<p>1 — рисование пятна если нет песечения
+с контуром, который создал фильтр Canny</p>
+<p>2 — рисование пятна</p>
+<p>3 — заливка (эксперементальная фича,
+пока работает нестабильно)</p>
+<p>4 — ластик</p>
+<p>5 — режим рисования полигона (точки
+контура добавляются правой кнопкой
+мыши)</p>
+<p><br/>
+<br/>
+
+</p>
 </body>
 </html>
