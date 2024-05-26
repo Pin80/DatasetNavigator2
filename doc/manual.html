@@ -4,8 +4,10 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 	<title></title>
 	<meta name="generator" content="LibreOffice 7.3.7.2 (Linux)"/>
-	<meta name="created" content="2024-05-26T13:38:32.066891695"/>
+	<meta name="created" content="2024-05-26T20:42:23.886478102"/>
 	<meta name="changed" content="00:00:00"/>
+	<meta name="changed" content="00:00:00">
+	<meta name="changed" content="00:00:00">
 	<meta name="changed" content="00:00:00">
 	<style type="text/css">
 		@page { size: 210.01mm 297mm; margin: 20mm }
@@ -17,7 +19,7 @@
 <body lang="ru-RU" link="#000080" vlink="#800000" dir="ltr"><p align="center" style="line-height: 100%; margin-top: 4.23mm; margin-bottom: 2.12mm; page-break-after: avoid">
 <font face="Liberation Sans, sans-serif"><font size="6" style="font-size: 28pt"><b>Dataset
 Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font></font></p>
-<p><u>Описание:</u></p>
+<p><u><b>Описание:</b></u></p>
 <p>Приложение состоит из двух частей 
 </p>
 <p>1)Dataset Navigator : Показывает имена и файлы
@@ -26,15 +28,29 @@ Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font>
 на строке с именем файла), передает
 выбранное изображение (и маску когда
 установлена связь) в Annotation tool, а также
-другие функции</p>
+другие функции.</p>
+<p>Для определения связи имени файла
+маски и изображения имя файла разбивается
+на части: префикс, сффикс, остальное
+(индекс, расширение) Имя файла изображения
+связано с именем файла маски когда
+соблюдаются следующие условия:</p>
+<p>а)они имеют общий суффикс 
+</p>
+<p>б)суффикс соответствует тому что
+указано в настройках</p>
+<p>в)префикс маски соответствует тому
+что указано в настройках</p>
+<p>г)совпадает остальное(индекс, расширение)
+</p>
 <p>2)Annotation tool: Рисует маску для изображения,
 с помощь выбранного инструмента и
 выбранного значения маркера, ее
-временное(замарозка) и постоянное
-сохранение, а также другие функции</p>
+временное(заморозка) и постоянное
+сохранение, а также другие функции.</p>
 <p>Установка:</p>
 <p>TODO (раздел пока не готов)</p>
-<p><u>Зависимости:</u></p>
+<p><u><b>Зависимости:</b></u></p>
 <ol>
 	<li><p>Qt ( 5.12 – 5.15) (c++)</p>
 	<li><p>zeromq (c и python bindings)</p>
@@ -49,9 +65,9 @@ Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font>
 <br/>
 
 </p>
-<p><u>Пользовательский интерфейс Annotation
-tool:</u></p>
-<p>Горячие клавиши:</p>
+<p><u><b>Пользовательский интерфейс
+Annotation tool:</b></u></p>
+<p><u>Горячие клавиши:</u></p>
 <p>h — вызов справки</p>
 <p>v — сменить вид (Canny → original)</p>
 <p>s — заморозка, т.&nbsp;е. Наложение на
@@ -72,7 +88,7 @@ Dataset Navigator)</p>
 <p>m — сдвиг курсора (для доступности
 рисования в углах)</p>
 <p>esc - выход</p>
-<p>Трекбары:</p>
+<p><u>Трекбары:</u></p>
 <p>class# - значение того кода, которым будет
 рисоваться маска</p>
 <p>width# - ширина пятна рисования/стирания</p>
@@ -89,16 +105,51 @@ Dataset Navigator)</p>
 <p>5 — режим рисования полигона (точки
 контура добавляются правой кнопкой
 мыши)</p>
-<p><u>Описание файла settings.json</u></p>
+<p><br/>
+<br/>
+
+</p>
+<p><u><b>Пользовательский интерфейс Dataset
+Navigator:</b></u></p>
+<p style="text-decoration: none">Image Folder — выбор папки
+с изображениями</p>
+<p style="text-decoration: none">Mask Image Folder — выбор
+папки с масками изображений</p>
+<p style="text-decoration: none">Update lists — ручное
+обновление списков изображений и масок</p>
+<p style="text-decoration: none">Переключатель Connect —
+установить связь с Annotation tool</p>
+<p style="text-decoration: none">Im/Msk — показать список
+изображений/масок или через «swipe»
+механизм</p>
+<p style="text-decoration: none">контекстное меню:</p>
+<p style="text-decoration: none">Send to A.T. - передать имя
+файла изображения (а при наличии связи
+и имя файла маски) в Annotation tool (или двойной
+щелчок мыши)</p>
+<p style="text-decoration: none">Show image — показать
+изображение/маску в отдельном окне</p>
+<p style="text-decoration: none">Find mask image file — поиск
+связи вручную между именем файла
+изображения из списка изображений и
+именем файла маски и списка масок
+(например image_photo00001.png с mask_photo00001.png)</p>
+<p style="text-decoration: none">Fix all file names — исправить
+все «неформатные» имена файлов
+изображений/масок</p>
+<p style="text-decoration: none">Reindex all file names —
+реиндексировать все изображения/маски
+начиная с номера указанного в диалоге</p>
+<p><u><b>Описание файла settings.json</b></u></p>
 <p style="text-decoration: none">zmqurlcp — адрес для
 межпроцессного взаимодействия</p>
-<p style="text-decoration: none"> zmqurlpc - адрес для
+<p style="text-decoration: none">zmqurlpc - адрес для
 межпроцессного взаимодействия</p>
 <p style="text-decoration: none">default_width — ширина маски
 по умолчанию</p>
 <p style="text-decoration: none">default_height — высота
 маски по умолчанию</p>
-<p style="text-decoration: none">manual  — путь к этому
+<p style="text-decoration: none">manual — путь к этому
 мануалу</p>
 <p style="text-decoration: none">scolor : [0, 0, 255] — цвет
 слоя временной маски</p>
@@ -108,7 +159,7 @@ Dataset Navigator)</p>
 курсора</p>
 <p style="text-decoration: none">lcolor : [0, 255, 255] - — цвет
 линий полигона</p>
-<p style="text-decoration: none">suffix  - общий суффикс
+<p style="text-decoration: none">suffix - общий суффикс
 имени изображения и маски</p>
 <p style="text-decoration: none">mask_prefix - префикс в
 имени маски</p>
