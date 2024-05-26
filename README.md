@@ -13,7 +13,7 @@
     2)https://www.qt.io/qt-5-12 -> (через VPN (для россии))
     3)pip install zmq
     4)pip install opencv-python
-    5)numpy
-    6)pip install matplotlib
+    5)pip install numpy
+    6)pip install matplotlib (на будущее)
     7)pip install pillow
     
