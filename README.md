@@ -17,4 +17,5 @@
     5)pip install numpy  
     6)pip install matplotlib (на будущее)  
     7)pip install pillow  
+    8)pip install scipy  
     
