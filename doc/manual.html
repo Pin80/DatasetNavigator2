@@ -4,8 +4,9 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 	<title></title>
 	<meta name="generator" content="LibreOffice 7.3.7.2 (Linux)"/>
-	<meta name="created" content="2024-05-26T10:12:25.387739562"/>
+	<meta name="created" content="2024-05-26T13:38:32.066891695"/>
 	<meta name="changed" content="00:00:00"/>
+	<meta name="changed" content="00:00:00">
 	<style type="text/css">
 		@page { size: 210.01mm 297mm; margin: 20mm }
 		p { line-height: 115%; margin-bottom: 2.47mm; background: transparent; background: transparent }
@@ -16,14 +17,14 @@
 <body lang="ru-RU" link="#000080" vlink="#800000" dir="ltr"><p align="center" style="line-height: 100%; margin-top: 4.23mm; margin-bottom: 2.12mm; page-break-after: avoid">
 <font face="Liberation Sans, sans-serif"><font size="6" style="font-size: 28pt"><b>Dataset
 Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font></font></p>
-<p>Описание:</p>
+<p><u>Описание:</u></p>
 <p>Приложение состоит из двух частей 
 </p>
 <p>1)Dataset Navigator : Показывает имена и файлы
 изображений и их маски, находит связь
 изображение и маски(показывая галочку
 на строке с именем файла), передает
-выбранное  изображение (и маску когда
+выбранное изображение (и маску когда
 установлена связь) в Annotation tool, а также
 другие функции</p>
 <p>2)Annotation tool: Рисует маску для изображения,
@@ -33,7 +34,7 @@ Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font>
 сохранение, а также другие функции</p>
 <p>Установка:</p>
 <p>TODO (раздел пока не готов)</p>
-<p>Зависимости:</p>
+<p><u>Зависимости:</u></p>
 <ol>
 	<li><p>Qt ( 5.12 – 5.15) (c++)</p>
 	<li><p>zeromq (c и python bindings)</p>
@@ -48,14 +49,14 @@ Navigator and <meta name="changed" content="00:00:00">Annotation tool</b></font>
 <br/>
 
 </p>
-<p>Пользовательский интерфейс Annotation
-tool:</p>
+<p><u>Пользовательский интерфейс Annotation
+tool:</u></p>
 <p>Горячие клавиши:</p>
 <p>h — вызов справки</p>
 <p>v — сменить вид (Canny → original)</p>
 <p>s — заморозка, т.&nbsp;е. Наложение на
 слой замороженной маски(изначально
-пустой) слоя текущей(временной) маски 
+пустой) слоя текущей(временной) маски
 (слой замороженной маски подсвечивается
 салатовым, а не замороженной красным)</p>
 <p>f — сохрание маски (с уведомлением
@@ -88,6 +89,38 @@ Dataset Navigator)</p>
 <p>5 — режим рисования полигона (точки
 контура добавляются правой кнопкой
 мыши)</p>
+<p><u>Описание файла settings.json</u></p>
+<p style="text-decoration: none">zmqurlcp — адрес для
+межпроцессного взаимодействия</p>
+<p style="text-decoration: none"> zmqurlpc - адрес для
+межпроцессного взаимодействия</p>
+<p style="text-decoration: none">default_width — ширина маски
+по умолчанию</p>
+<p style="text-decoration: none">default_height — высота
+маски по умолчанию</p>
+<p style="text-decoration: none">manual  — путь к этому
+мануалу</p>
+<p style="text-decoration: none">scolor : [0, 0, 255] — цвет
+слоя временной маски</p>
+<p style="text-decoration: none">fcolor : [0, 255, 0] - — цвет
+слоя постоянной маски</p>
+<p style="text-decoration: none">ccolor : [255, 0, 0] — цвет
+курсора</p>
+<p style="text-decoration: none">lcolor : [0, 255, 255] - — цвет
+линий полигона</p>
+<p style="text-decoration: none">suffix  - общий суффикс
+имени изображения и маски</p>
+<p style="text-decoration: none">mask_prefix - префикс в
+имени маски</p>
+<p style="text-decoration: none">mask_subfolder — подпапка
+для масок по умолчанию</p>
+<p style="text-decoration: none">log_filename - имя лог файла
+для annotation tool</p>
+<p style="text-decoration: none">start_folder — начальный
+путь для Dataset Navigator</p>
+<p style="text-decoration: none">&quot;python_app&quot; — имя
+приложения? которое автоматически
+запускается при запуске DatasetNavigator</p>
 <p><br/>
 <br/>
 
