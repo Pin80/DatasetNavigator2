@@ -10,21 +10,37 @@ import GlobalProp 1.0
 Rectangle{
     property alias delegfname: litem_text.text
     property alias currchecked : maskbox.checked
+    signal sendImage()
     signal checkMaskTest()
     signal findMask()
     signal showImage()
     signal cvtNames()
-    property var ctxMenu : contextMenu
+    signal reindexNames()
+    property var ctxMenu : mcontextMenu
     //https://bugreports.qt.io/browse/QTBUG-106645
     border.color: TStyle.background_border
     border.width: 1
 
     property bool ishovered : false
     TContextMenu {
-        id: contextMenu
+        MenuSeparator {
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: TStyle.background_small
+            }
+        }
+        id: mcontextMenu
+        Action { text: qsTr("Send to A.T."); onTriggered: sendImage() }
         Action { text: qsTr("Show image"); onTriggered: showImage() }
         Action { text: qsTr("Find mask image file"); onTriggered: findMask() }
-        Action { text: qsTr("Convert all file names"); onTriggered: cvtNames() }
+        Action { text: qsTr("Fix all file names"); onTriggered: cvtNames() }
+        Action { text: qsTr("Reindex all file names"); onTriggered: reindexNames() }
+        MenuSeparator {
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: TStyle.background_small
+            }
+        }
     }
 
     RowLayout{
@@ -45,10 +61,12 @@ Rectangle{
 
         CheckBox {
             id: maskbox
+            palette.base: "transparent"
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: litem_text.height
             Layout.fillHeight: true
             indicator.height: litem_text.height - 4
+            indicator.width: litem_text.height - 4
             Layout.maximumWidth: litem_text.height
             Component.onCompleted: checkMaskTest();
         }

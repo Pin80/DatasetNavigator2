@@ -5,13 +5,6 @@ import GlobalProp 1.0
 
 Menu {
     id: menu
-    MenuSeparator {
-        contentItem: Rectangle {
-            implicitWidth: menu.width
-            implicitHeight: 1
-            color: TStyle.background_small
-        }
-    }
     topPadding: 2
     bottomPadding: 2
     delegate: MenuItem {

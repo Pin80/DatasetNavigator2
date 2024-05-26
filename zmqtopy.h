@@ -17,6 +17,7 @@
 #include <zhelpers.h>
 #include <iostream>
 #include <thread>
+#include <errno.h>
 
 class ZMQBackend: public QObject
 {

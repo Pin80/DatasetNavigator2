@@ -5,60 +5,27 @@ import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
+import QtGraphicalEffects 1.0
 import QtQuick.Controls.Material 2.12
 import GlobalProp 1.0
 
 Item {
     id : toggle_panel
     property bool toggle_im: true
-    property bool isBound: false
+    property alias isBound: zswitch.isBound
     signal sig_bind()
     signal sig_unbind()
     RowLayout {
         anchors.fill: parent
         spacing: 2
         anchors.margins: 2
-        Switch {
-            id: toggle_bind2
-            text: qsTr("Connect")
-            font.pointSize: TStyle.scaleky*14
+        TSwitch {
+            id: zswitch
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
-            checked: isBound
-            TMsgDialog {
-                id : errordialog2
-            }
-
-            indicator: Rectangle {
-                id: indicswitch
-                implicitWidth: 2*indicswitchbtn.width
-                implicitHeight: toggle_panel.height - 2
-                x: toggle_bind2.leftPadding
-                y: parent.height / 2 - toggle_panel.height / 2
-                radius: indicswitchbtn.radius
-                color: toggle_bind2.checked ? TStyle.indicator_on: TStyle.background_small
-                border.color: TStyle.background_border
-
-                Rectangle {
-                    id: indicswitchbtn
-                    x: toggle_bind2.checked ? parent.width - 2*radius : 0
-                    implicitWidth: 26*TStyle.scalekx
-                    implicitHeight: implicitWidth
-                    radius: implicitWidth/2
-                    color: TStyle.indicator
-                    border.color:  TStyle.background_border
-                }
-            }
-
-            contentItem: Text {
-                id: txtswitch
-                text: toggle_bind2.text
-                font: toggle_bind2.font
-                opacity: enabled ? 1.0 : 0.3
-                verticalAlignment: Text.AlignVCenter
-                leftPadding: (indicswitch.width + 5)
-            }
+            text: qsTr("Connect")
+            property alias isBound: zswitch.checked
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
@@ -74,14 +41,14 @@ Item {
                     }
                 }
                 onEntered: {
-                        oldcolor = indicswitchbtn.color
-                        indicswitchbtn.color = TStyle.indicator_hovered
+                        zswitch.ishovered = true;
                 }
                 onExited: {
-                        indicswitchbtn.color = oldcolor
+                    zswitch.ishovered = false;
                 }
             }
         }
+
         TToggle {
             id: toggle_i
             text: qsTr("Im")
@@ -91,28 +58,31 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
             Layout.preferredWidth: parent.width*0.2
-            palette.button: TStyle.indicator
-            palette.dark: TStyle.indicator_pressed
+            ispressed: toggle_im
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : TStyle.indicator
                 onEntered: {
                     if (!toggle_im) {
-                        oldcolor = toggle_i.palette.button
-                        toggle_i.palette.button = TStyle.indicator_hovered
+                        toggle_i.ishovered = true
+                    }
+                    else
+                    {
+                        toggle_i.ishovered = false
                     }
                 }
                 onExited: {
                     if (!toggle_im) {
-                        toggle_i.palette.button = oldcolor
+                        toggle_i.ishovered = false
+                    }
+                    else
+                    {
+                        toggle_i.ishovered = false
                     }
                 }
                 onPressed: {
                     if (!toggle_im) {
                         toggle_im = true
-                        toggle_m.palette.button = TStyle.indicator
-                        toggle_i.palette.dark = TStyle.indicator_pressed
                     }
                 }
              }
@@ -126,28 +96,31 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
             Layout.preferredWidth: parent.width*0.2
-            palette.button: TStyle.indicator
-            palette.dark: TStyle.indicator_pressed
+            ispressed: !toggle_im
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                property color oldcolor : TStyle.indicator
                 onEntered: {
                     if (toggle_im) {
-                        oldcolor = toggle_m.palette.button
-                        toggle_m.palette.button = TStyle.indicator_hovered
+                        toggle_m.ishovered = true
+                    }
+                    else
+                    {
+                        toggle_m.ishovered = false
                     }
                 }
                 onExited: {
                     if (toggle_im) {
-                        toggle_m.palette.button = oldcolor
+                        toggle_m.ishovered = false
+                    }
+                    else
+                    {
+                        toggle_m.ishovered = false
                     }
                 }
                 onPressed: {
                     if (toggle_im) {
                         toggle_im = false
-                        toggle_i.palette.button = TStyle.indicator
-                        toggle_m.palette.dark = TStyle.indicator_pressed
                     }
                 }
             }

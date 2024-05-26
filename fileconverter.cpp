@@ -4,11 +4,25 @@ TConverter::TConverter(TBroker *_broker)
     : m_broker(_broker)
 {
     m_start = false;
-    connect(m_broker, SIGNAL(ifldChanged(QString)), this, SLOT(onFolderName(QString)));
+    m_prefix = "image_";
+    m_startIdx = 1;
 }
 
-void TConverter::onStartConvert()
+void TConverter::onStartConvert(QString _prefiz, QString _path)
 {
+    m_prefix = _prefiz;
+    m_folder = _path;
+    m_startIdx = 1;
+    m_reindex = false;
+    m_start = true;
+}
+
+void TConverter::onStartReindex(QString _prefiz, QString _path, int _start)
+{
+    m_prefix = _prefiz;
+    m_folder = _path;
+    m_startIdx = _start;
+    m_reindex = true;
     m_start = true;
 }
 
@@ -23,15 +37,15 @@ void TConverter::doconvert()
     QStringList images = directory.entryList(QStringList() << "*.jpg" << "*.JPG" << "*.png",QDir::Files);
     QJsonValue value = m_broker->getSettings().value("suffix");
     m_suffix = value.toString();
-    m_prefix = "image_";
-    int idx = 1;
+    int idx = m_startIdx;
+    int count = 0;
     QRegularExpression exp("^.*" + m_suffix + "\\d+\\.(?:jpg|png|jpeg)$");
     const auto max_idx = 10000;
     QString repname = m_folder + "/report.txt";
     QFile report(repname);
     if (!report.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        emit converted(false);
+        emit converted(0);
         return;
     }
     QTextStream out(&report);
@@ -43,11 +57,11 @@ void TConverter::doconvert()
         QString fext = fi.suffix();
         QRegularExpressionMatch match = exp.match(filename);
         // +reindex
-        if (match.hasMatch())
+        if (match.hasMatch() && !m_reindex)
             continue;
         QString newname;
 
-        while ((idx <= max_idx) && (!match.hasMatch()))
+        while ((idx <= max_idx) && ((!match.hasMatch()) || m_reindex))
         {
             QString number = QStringLiteral("%1").arg(idx, 5, 10, QLatin1Char('0'));
             newname = path + "/" + m_prefix + m_suffix + number + "." + fext;
@@ -62,7 +76,7 @@ void TConverter::doconvert()
         }
         if (idx > max_idx)
         {
-            emit converted(false);
+            emit converted(0);
             break;
         }
         else
@@ -73,16 +87,13 @@ void TConverter::doconvert()
                 QFile::rename(oldfullname, newname);
                 out << "old:" << oldfullname << "  new:" << newname << '\n';
                 result = true;
+                count++;
             }
         }
         idx++;
     }
     report.close();
-    emit converted(result);
+    emit converted(count);
     m_start = false;
 }
 
-void TConverter::onFolderName(QString _fld)
-{
-    m_folder = _fld;
-}

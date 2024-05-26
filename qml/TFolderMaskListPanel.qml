@@ -6,10 +6,15 @@ import QtQuick.Dialogs 1.1
 import QtQuick.Layouts 1.0
 import Qt.labs.folderlistmodel  2.0
 import GlobalProp 1.0
+import ipc.zmq 1.0
 
 Item {
+    id: control
+    signal indicon();
     property alias modelfolder: folderMaskModel.folder
     property alias mmodel : folderMaskModel
+    property string mskdialog_title: "intro"
+    property string mskdialog_fname: "qrc:///images/intro.png"
     FolderListModel {
         id: folderMaskModel
         //nameFilters: ["*.*"]
@@ -21,6 +26,15 @@ Item {
         anchors.fill: parent
         fillMode: Image.Tile
         source: "qrc:///images/image_mlist.png"
+        TImgDialog {
+            id : mskdialog
+            property int imgwidth: 350*TStyle.scalekx
+            property int imgheight: 350*TStyle.scaleky
+            iwidth: imgwidth
+            iheight: imgheight
+            title: control.mskdialog_title
+            fname: control.mskdialog_fname
+        }
         ScrollView {
             id: flickableMask
             anchors.fill: parent
@@ -53,7 +67,7 @@ Item {
                     TDelegate_msk {
                         id: mfileDelegate_rec
                         delegfnameM: fileName
-                        property string curdelegfname: ListView.isCurrentItem ? delegfnameM: ""
+                        property string currdelegfname: ListView.isCurrentItem ? delegfnameM: ""
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.margins: 0*(height/25)
@@ -64,6 +78,21 @@ Item {
                         readonly property string currcolorH: TStyle.indicator_hovered
                         property string currcolorhov: ishovered ? currcolorH : currcolor
                         color: currcolorhov
+                        onShowMask: {
+                            if (delegfnameM == "") {
+                                mskialog_title = "intro"
+                                mskdialog_fname = "qrc:///images/intro.png"
+                            }
+                            else {
+                                control.mskdialog_title = delegfnameM
+                                control.mskdialog_fname = "image://mcolors/" + mskdialog_title
+                            }
+                            mskdialog.show()
+                        }
+                        onCvtNames: {
+                            Tipcagent.convertMaskFiles();
+                            indicon();
+                        }
                         MouseArea{
                             anchors.fill: parent
                             hoverEnabled: true
@@ -79,10 +108,23 @@ Item {
                             onPressed:      {
                                 oldcolor = TStyle.list_select
                                 if (mouse.button === Qt.RightButton) {
-
+                                    if (typeof(mctxMenu) !== "undefined")
+                                        mctxMenu.popup()
                                 }
                                 else {
                                     lview_mask.currentIndex = index
+                                }
+                            }
+                        }
+                        onCurrdelegfnameChanged: {
+                            if (ListView.isCurrentItem) {
+                                if (currdelegfname == "") {
+                                    mskdialog_title = "intro"
+                                    mskdialog_fname = "qrc:///images/intro.png"
+                                }
+                                else {
+                                    mskdialog_title = currdelegfname
+                                    mskdialog_fname = "image://mcolors/" + mskdialog_title
                                 }
                             }
                         }

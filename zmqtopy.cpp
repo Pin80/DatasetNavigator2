@@ -263,6 +263,17 @@ void ZMQBackend::stopZMQpool()
 
 void ZMQBackend::processFinished(int _code, QProcess::ExitStatus)
 {
-    qWarning() << "Annotation window is closed";
+    if (_code == 0)
+    {
+        qWarning() << "Annotation window is closed";
+    }
+    else
+    {
+        const auto cENOENT = 2; // for linux: linux/include/errno.h
+        if (_code == cENOENT)
+            qCritical() << "Annotation tool is not found(ENOENT)";
+        else
+            qCritical() << "Python application is terminated with code:" << _code;
+    }
     QCoreApplication::exit(_code);
 }

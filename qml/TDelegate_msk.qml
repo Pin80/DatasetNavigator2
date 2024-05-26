@@ -12,6 +12,27 @@ Rectangle{
     border.color: TStyle.background_border
     border.width: 1
     property bool ishovered : false
+    property var mctxMenu : mcontextMenu
+    signal showMask()
+    signal cvtNames()
+    TContextMenu {
+        id: mcontextMenu
+        MenuSeparator {
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: TStyle.background_small
+            }
+        }
+        Action { text: qsTr("Show image"); onTriggered: showMask() }
+        Action { text: qsTr("Fix all file names"); onTriggered: cvtNames() }
+        Action { text: qsTr("Reindex all file names"); onTriggered: reindexNames() }
+        MenuSeparator {
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: TStyle.background_small
+            }
+        }
+    }
     RowLayout{
         id: litem_rlayM
         anchors.fill: parent

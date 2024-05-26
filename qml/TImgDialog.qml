@@ -7,13 +7,13 @@ import QtQuick.Window 2.0
 import GlobalProp 1.0
 
 Window{
-    id: imgwnd
+    id: control
     title: qsTr("Image")
     color: TStyle.background_small
     visible: false
     property string fname: ""
-    property alias iwidth: imgwnd.width
-    property alias iheight: imgwnd.height
+    property alias iwidth: control.width
+    property alias iheight: control.height
     minimumWidth: 100*TStyle.scalekx
     minimumHeight: 100*TStyle.scaleky
     ColumnLayout {

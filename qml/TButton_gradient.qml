@@ -6,24 +6,28 @@ import QtGraphicalEffects 1.0
 import GlobalProp 1.0
 
 Rectangle {
+    id: control
     property string btntext: qsTr("Button")
     property bool is_pressed: false
     property bool is_hovered: false
     border.color: TStyle.background
     border.width: 3
-    color: "#a1395847"
+    readonly property string btncolorH: "#ffad00"
+    readonly property string btncolorP: "#8e4e00"
+    readonly property string btncolorP2: "#af6700"
+    readonly property string btncolorSH: "#8e4e00"
+    readonly property string btncolorNP: "#ff6700"
+    readonly property string btncolorSH2: "#a1395847"
+    color: btncolorSH2
     RowLayout {
         id: btn_layout
         spacing: 0
         anchors.fill: parent
-        property string currcolorNP: is_hovered ? currcolorH : "#ff6700"
-        readonly property string currcolorH: "#ffad00"
-        readonly property string currcolorP: "#8e4e00"
-        readonly property string currcolorP2: "#af6700"
-        property string currcolor: is_pressed ? currcolorP : currcolorNP
+        property string currcolorNP: is_hovered ? control.btncolorH : control.btncolorNP
+        property string currcolor: is_pressed ? control.btncolorP : currcolorNP
         Rectangle {
             id: rect0
-            color: "#8e4e00"
+            color: control.btncolorSH
             Layout.fillHeight: true
             Layout.topMargin: is_pressed ? 6 : 2
             Layout.leftMargin: is_pressed ? 6 : 2
@@ -47,14 +51,14 @@ Rectangle {
                        }
                        GradientStop {
                            id: grad0stop3
-                           position: 1.0 ; color: is_pressed ? btn_layout.currcolorP2:  btn_layout.currcolorP
+                           position: 1.0 ; color: is_pressed ? control.btncolorP2: control.btncolorP
                        }
                 }
             }
          }
         Rectangle {
             id: rect
-            color: "#8e4e00"
+            color: control.btncolorSH
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.topMargin: is_pressed ? 6 : 2
@@ -68,7 +72,7 @@ Rectangle {
                    gradient: Gradient {
                        GradientStop {
                            id: grad1stop1
-                           position: 0.0 ; color: is_pressed ? btn_layout.currcolorP2 :  btn_layout.currcolorP
+                           position: 0.0 ; color: is_pressed ? control.btncolorP2 : control.btncolorP
                        }
                        GradientStop {
                            id: grad1stop2
@@ -76,7 +80,7 @@ Rectangle {
                        }
                        GradientStop {
                            id: grad1stop3
-                           position: 1.0 ; color: is_pressed ? btn_layout.currcolorP2:  btn_layout.currcolorP
+                           position: 1.0 ; color: is_pressed ? control.btncolorP2: control.btncolorP
                        }
                 }
             }
@@ -93,7 +97,7 @@ Rectangle {
          }
         Rectangle {
             id: rect2
-            color: "#8e4e00"
+            color: control.btncolorSH
             Layout.fillHeight: true
             Layout.topMargin: is_pressed ? 6 : 2
             Layout.rightMargin: 2
@@ -117,7 +121,7 @@ Rectangle {
                        }
                        GradientStop {
                            id: grad2stop3
-                           position: 1.0 ; color: is_pressed ? btn_layout.currcolorP2:  btn_layout.currcolorP
+                           position: 1.0 ; color: is_pressed ? control.btncolorP2: control.btncolorP
                        }
                 }
             }

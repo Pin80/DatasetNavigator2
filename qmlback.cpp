@@ -4,9 +4,7 @@ ColorImageProvider::ColorImageProvider(TBroker *_broker)
            : QQuickImageProvider(QQuickImageProvider::Pixmap),
              QObject(nullptr),
              m_broker(_broker)
-{
-    connect(m_broker, SIGNAL(ifldChanged(QString)), this, SLOT(onFolderName(QString)));
-}
+{ }
 
 QPixmap ColorImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
@@ -84,7 +82,7 @@ QUrl TZMQIPC::getMaskFolder() const
 void TZMQIPC::setMaskFolder(QUrl _fld)
 {
     m_maskfolder = _fld.toLocalFile();
-    emit fldChanged(m_maskfolder);
+    emit mfldChanged(m_maskfolder);
 }
 
 void TZMQIPC::closeWindow()
@@ -173,11 +171,25 @@ QUrl TZMQIPC::getshortMaskName(const QString& fname,
     return QString();
 }
 
-void TZMQIPC::convertFiles()
+void TZMQIPC::convertMaskFiles()
 {
-    emit sig_cvtFileNames();
+    emit sig_cvtFileNames(m_maskprefix, m_maskfolder);
 }
 
+void TZMQIPC::convertImageFiles()
+{
+    emit sig_cvtFileNames("image_", m_folder);
+}
+
+void TZMQIPC::reindexImageFiles(int _val)
+{
+    emit sig_reidxFileNames("image_", m_folder, _val);
+}
+
+void TZMQIPC::reindexMaskFiles(int _val)
+{
+    emit sig_reidxFileNames(m_maskprefix, m_maskfolder, _val);
+}
 
 TZMQIPC::TZMQIPC(TBroker* _broker,
                  QProcess * _proc,
@@ -242,14 +254,15 @@ TZMQIPC::TZMQIPC(TBroker* _broker,
             connect(m_zb, SIGNAL(unboundSocket(bool)), this, SIGNAL(unboundSocket(bool)));
             connect(m_zb, SIGNAL(sentString(bool)), this, SIGNAL(sentString(bool)));
             connect(m_zb, SIGNAL(recvString(QUrl)), this, SIGNAL(recvString(QUrl)));
-            connect(m_cvt, SIGNAL(converted(bool)), this, SIGNAL(converted(bool)));
+            connect(m_cvt, SIGNAL(converted(int)), this, SIGNAL(converted(int)));
             connect(this, SIGNAL(sig_bindSocket()), m_zb, SLOT(onBindSocket()));
             connect(this, SIGNAL(sig_unbindSocket()), m_zb, SLOT(onUnbindSocket()));
             connect(this, SIGNAL(sig_sendString(QString)), m_zb, SLOT(onSendString(QString)));
-            connect(this, SIGNAL(sig_cvtFileNames()), m_cvt, SLOT(onStartConvert()));
-
+            connect(this, SIGNAL(sig_cvtFileNames(QString, QString)), m_cvt, SLOT(onStartConvert(QString, QString)));
+            connect(this, SIGNAL(sig_reidxFileNames(QString, QString, int)), m_cvt, SLOT(onStartReindex(QString, QString, int)));
         }
         QObject::connect(this, SIGNAL(fldChanged(QString)), m_broker, SIGNAL(ifldChanged(QString)));
+        QObject::connect(this, SIGNAL(mfldChanged(QString)), m_broker, SIGNAL(mfldChanged(QString)));
     }
     catch (const std::runtime_error& _err)
     {

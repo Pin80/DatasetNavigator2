@@ -18,10 +18,10 @@ class TConverter: public QObject
 public:
     TConverter(TBroker* _broker);
 signals:
-    void converted(bool);
+    void converted(int);
 public slots:
-    void onStartConvert();
-    void onFolderName(QString _fld);
+    void onStartConvert(QString _prefiz, QString _path);
+    void onStartReindex(QString _prefiz, QString _path, int _start);
     void doconvert();
 private:
     QString m_suffix;
@@ -29,6 +29,8 @@ private:
     QString m_folder;
     TBroker* m_broker;
     QAtomicInt m_start = false;
+    int m_startIdx;
+    bool m_reindex = false;
 };
 
 #endif // TCONVERTER_H

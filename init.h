@@ -16,6 +16,7 @@ struct TInit
 {
     QScopedPointer<TBroker> broker;
     std::unique_ptr<ColorImageProvider> prov;
+    std::unique_ptr<ColorImageProvider> mprov;
     QScopedPointer< QProcess > pyprocess;
     QScopedPointer<ZMQBackend> zbackend;
     QScopedPointer<TConverter> fbackend;

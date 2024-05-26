@@ -61,6 +61,7 @@ bool init(QQmlApplicationEngine& _engine)
         qCritical() << "No DN to annot tool url is found in settings.json";
         return false;
     }
+
     value = initstruct.broker->getSettings().value("python_app");
     QString pyapp = value.toString();
     initstruct.pyprocess.reset( new QProcess(nullptr));
@@ -69,8 +70,14 @@ bool init(QQmlApplicationEngine& _engine)
     QStringList pythonCommandArguments = QStringList() << scriptFile;
     #ifndef QT_DEBUG
     initstruct.pyprocess->start(program, pythonCommandArguments);
-    initstruct.pyprocess->waitForStarted();
+    initstruct.pyprocess->waitForStarted(1000);
+    if (initstruct.pyprocess->state() != QProcess::ProcessState::Running)
+    {
+        qCritical() << "Python application is not found";
+        return false;
+    }
     #endif
+
     initstruct.zbackend.reset(new ZMQBackend(urlpc, urlcp));
     QObject::connect(initstruct.broker.get(), SIGNAL(processTasks()),
                      initstruct.zbackend.get(), SLOT(processZMQpool()) );
@@ -78,11 +85,18 @@ bool init(QQmlApplicationEngine& _engine)
     QObject::connect(initstruct.broker.get(), SIGNAL(processTasks()),
                      initstruct.fbackend.get(), SLOT(doconvert()));
     initstruct.prov.reset( new ColorImageProvider(initstruct.broker.get()));
+    QObject::connect(initstruct.broker.get(), SIGNAL(ifldChanged(QString)),
+                     initstruct.prov.get(), SLOT(onFolderName(QString)));
+    initstruct.mprov.reset( new ColorImageProvider(initstruct.broker.get()));
+    QObject::connect(initstruct.broker.get(), SIGNAL(mfldChanged(QString)),
+                     initstruct.mprov.get(), SLOT(onFolderName(QString)));
     _engine.addImageProvider( QLatin1String("colors"), initstruct.prov.release() );
+    _engine.addImageProvider( QLatin1String("mcolors"), initstruct.mprov.release() );
     (void)qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
                                       "Tipcagent",
                                       getInstance);
     qmlRegisterSingletonType(QUrl("qrc:///qml/TStyle.qml"), "GlobalProp", 1, 0, "TStyle");
+
     #ifdef QT_DEBUG
     _engine.rootContext()->setContextProperty("QT_DEBUG", QVariant(true));
     #else

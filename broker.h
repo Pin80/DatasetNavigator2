@@ -37,8 +37,10 @@ public:
     {
         return m_jsonObj;
     }
+    void stop();
 signals:
     void ifldChanged(QString);
+    void mfldChanged(QString);
     void processTasks();
 private:
     QString m_ifolder;

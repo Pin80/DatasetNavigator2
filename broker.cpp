@@ -27,15 +27,19 @@
             return;
         }
         m_jsonObj = jsonDoc.object();
-        m_future = QtConcurrent::run(this, & TBroker::processBroker);
+        m_future = QtConcurrent::run(this, &TBroker::processBroker);
     }
 
     TBroker::~TBroker()
     {
-        if (m_isrunning)
+        stop();
+    }
+
+    void TBroker::stop()
+    {
+        while (!m_future.isFinished())
         {
             m_isrunning = false;
-            m_future.waitForFinished();
         }
     }
 
@@ -47,4 +51,5 @@
             emit processTasks();
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+        qDebug() << "thread is stopped";
     }

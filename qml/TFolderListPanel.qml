@@ -42,6 +42,20 @@ Item {
             iheight: imgheight
             title: imgdialog_title
             fname: imgdialog_fname
+            x: Screen.desktopAvailableWidth/2 - imgwidth/2
+            y: Screen.desktopAvailableHeight/2 - imgheight/2
+        }
+        TCvtDialog {
+            id: cvtdialog
+            width: 250
+            height: 250
+            minvalue: 1
+            maxvalue: 10000
+            title: "set start index"
+            onAccepted: {
+                console.log("select:", resultval )
+                Tipcagent.reindexImageFiles(resultval);
+            }
         }
         ScrollView {
             id: flickable
@@ -56,7 +70,6 @@ Item {
                 anchors.bottom: flickable.bottom
                 sbwidth: flickable.anchors.rightMargin - 4
             }
-
             ListView {
                 id: lview
                 anchors.fill: parent
@@ -101,13 +114,14 @@ Item {
                                 currchecked = false
                             }
                         }
-                        MessageDialog {
+                        TMsgDialog {
                             id: messageDialog_mask
                             title: "Info"
                             text: "Mask is not found"
                             icon: StandardIcon.Critical
                             Component.onCompleted: visible = false
                         }
+
                         onFindMask: {
                             console.log("attemt to find mask")
                             if (typeof maskmodel !== "undefined") {
@@ -143,14 +157,18 @@ Item {
                             imgdialog.show()
                         }
                         onCvtNames: {
-                            Tipcagent.convertFiles();
+                            Tipcagent.convertImageFiles();
                             indicon();
                         }
+                        onReindexNames: {
+                            cvtdialog.open()
+                        }
+
                         MessageDialog {
                             id: messageDialog_notsend
                             title: "Error"
                             text: "Data is not sent"
-                            //icon: StandardIcon.Critical
+                            icon: StandardIcon.Critical
                             Component.onCompleted: visible = false
                         }
                         onSendMessage: {

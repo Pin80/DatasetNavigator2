@@ -72,17 +72,21 @@ public:
 
     Q_INVOKABLE QUrl getshortMaskName(const QString& fname,
                                          const QString& path);
-    Q_INVOKABLE void convertFiles();
+    Q_INVOKABLE void convertImageFiles();
+    Q_INVOKABLE void convertMaskFiles();
+    Q_INVOKABLE void reindexImageFiles(int _val);
+    Q_INVOKABLE void reindexMaskFiles(int _val);
 signals:
     void sig_bindSocket();
     void sig_unbindSocket();
     void sig_sendString(QString);
-    void sig_cvtFileNames();
+    void sig_cvtFileNames(QString, QString);
+    void sig_reidxFileNames(QString, QString, int);
     void boundSocket(bool result);
     void unboundSocket(bool result);
     void sentString(bool result);
     void recvString(QUrl result);
-    void converted(bool result);
+    void converted(int result);
     void urlChanged();
     void sufChanged();
     void folderSet(QString);
@@ -93,6 +97,7 @@ private:
     TBroker* m_broker;
     QString m_suffix;
     QString m_maskprefix;
+    QString m_prefix;
     QString m_folder;
     QString m_maskfolder;
     QProcess * m_pyprocess = nullptr;

@@ -10,13 +10,41 @@ int main(int argc, char *argv[])
     {
         Q_UNUSED(argc)
         Q_UNUSED(argv)
+        const char * logfname = "datasetnavigator.log";
         QCoreApplication::setOrganizationName("Some organization");
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication app(argc, argv);
-        m_logFile.reset(new QFile("datasetnavigator.log"));
+        QFileInfo logInfo;
+        logInfo.setFile(logfname);
+        // simple log rotation
+        if (logInfo.exists())
+        {
+            QDir directory("");
+            QDateTime current = QDateTime::currentDateTime();
+            QDateTime created = logInfo.created();
+            int days = created.daysTo(current);
+            if (days > 0)
+            {
+                QStringList logs = directory.entryList(QStringList() << "*.log" ,QDir::Files);
+                foreach(QString filename, logs)
+                {
+                    if ((filename.contains(logfname)) && (filename.size() > QString(logfname).size()))
+                    {
+                        directory.remove(filename);
+                    }
+                }
+                QString newname = created.toString() + "_" + logfname;
+                QFile::rename(logfname, newname);
+            }
+        }
+
+        m_logFile.reset(new QFile(logfname));
         m_logFile.data()->open(QFile::Append | QFile::Text);
         if (!m_logFile->isOpen())
+        {
+            std::cerr << "i/o operation error" << std::endl;
             return -1;
+        }
         #ifndef QT_DEBUG
         qInstallMessageHandler(messageHandler);
         #endif
@@ -34,15 +62,25 @@ int main(int argc, char *argv[])
         {
             qWarning() << "ZMQ version is not fully mathced. ZMQ library may be not fully compitable";
         }
+
         // Под Gnome не работает
         app.setWindowIcon(QIcon("./images/favicon.png"));
+
         int result = 0;
         {
             initstruct.broker.reset(new TBroker);
+            //initstruct.broker->stop();
+            //return -1;
             QQmlApplicationEngine engine(&app);
             if (!init(engine))
+            {
+                std::cout << "exit" << std::endl;
+                initstruct.broker->stop();
                 return -1;
+            }
             result = app.exec();
+            //initstruct.broker->stop();
+            //return result;
             initstruct.zbackend->terminateZMQ_pool();
             initstruct.zbackend.reset(nullptr);
         }
@@ -66,4 +104,5 @@ int main(int argc, char *argv[])
     {
         std::cerr  << "unknown error" << std::endl;
     }
+    return -1;
 }
