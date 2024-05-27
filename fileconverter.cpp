@@ -39,7 +39,7 @@ void TConverter::doconvert()
     m_suffix = value.toString();
     int idx = m_startIdx;
     int count = 0;
-    QRegularExpression exp("^.*" + m_suffix + "\\d+\\.(?:jpg|png|jpeg)$");
+    QRegularExpression exp("^.*" + m_suffix + "\\d+\\.png$");
     const auto max_idx = 10000;
     QString repname = m_folder + "/report.txt";
     QFile report(repname);
@@ -64,7 +64,7 @@ void TConverter::doconvert()
         while ((idx <= max_idx) && ((!match.hasMatch()) || m_reindex))
         {
             QString number = QStringLiteral("%1").arg(idx, 5, 10, QLatin1Char('0'));
-            newname = path + "/" + m_prefix + m_suffix + number + "." + fext;
+            newname = path + "/" + m_prefix + m_suffix + number + ".png";// + fext;
             if (QFileInfo(newname).exists())
             {
                 idx++;
@@ -84,10 +84,19 @@ void TConverter::doconvert()
             if (!QFileInfo(newname).exists())
             {
                 QString oldfullname = m_folder + "/" + filename;
-                QFile::rename(oldfullname, newname);
-                out << "old:" << oldfullname << "  new:" << newname << '\n';
-                result = true;
-                count++;
+                QImage img;
+                if (img.load(oldfullname))
+                {
+                    img.save(newname);
+                    QFile::remove(oldfullname);
+                    out << "old:" << oldfullname << "  new:" << newname << '\n';
+                    result = true;
+                    count++;
+                }
+                else
+                {
+                    out << "error: old:" << oldfullname << "  new:" << newname << '\n';
+                }
             }
         }
         idx++;

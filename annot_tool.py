@@ -22,6 +22,7 @@ from logging import Formatter
 import re
 import os
 import time 
+import tkinter as tk
 
 DEFAULT_MASKNAME = "mask_original.png"
 DEFAULT_LOGNAME = "annot_tool.log"
@@ -110,7 +111,7 @@ def get_circlemask(r = 3):
     if (r > 0):
         img = Image.fromarray(dst, mode='L')
         draw = ImageDraw.Draw(img)
-        draw.ellipse((0, 0, 2*r+1, 2*r+1), outline = (255))
+        draw.ellipse((0, 0, 2*r, 2*r), outline = (255))
         dst = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0])
     else:
         dst[0, 0] = 255
@@ -320,8 +321,8 @@ def apply_mask(src, mask, color = (0, 255, 0)):
         dst = src
         dst_cmask = np.full([rows, cols, 3], 0, dtype=np.uint8)
         rows, cols, _ = src.shape
-    for row in range(rows):
-        for col in range(cols):
+    for row in range(rows ):
+        for col in range(cols ):
             if (mask[row, col] != 0):
                 dst_cmask[row, col, 0] = color[0]
                 dst_cmask[row, col, 1] = color[1]
@@ -370,13 +371,46 @@ def highlight_line(src, line, color = (255 ,255, 255)):
         rows, cols, _ = src.shape
     img = Image.fromarray(dst, mode='RGB')
     draw = ImageDraw.Draw(img)
-    x1 = line[0]; 
-    y1 = line[1]; 
-    x2 = line[2]; 
+    x1 = line[0]
+    y1 = line[1]
+    x2 = line[2]
     y2 = line[3]
     draw.line((x1, y1, x2, y2), fill=color, width=lwidth)
     dst = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
     return dst
+
+
+def draw_mask_polygon(src, mask, polygon, value = CLASS_CODE, color = (0, 0, 255)):
+    if (len(polygon) > 2):
+        img = Image.fromarray(src, mode='RGB')
+        img_gray = Image.fromarray(mask, mode='L')
+        draw = ImageDraw.Draw(img)
+        draw_gray = ImageDraw.Draw(img_gray)
+        draw.polygon(polygon, fill =rgb_to_hex(*color), outline =rgb_to_hex(*color))  
+        draw_gray.polygon(polygon, fill =value, outline =value)  
+        result = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
+        result_gray = np.array(img_gray.getdata(), np.uint8).reshape(img_gray.size[1], img_gray.size[0])
+        return result, result_gray
+    else:
+        return src, mask
+
+def draw_mask_line(src, mask, line, value = CLASS_CODE, color = (0, 0, 255)):
+    if (len(polygon) > 2):
+        img = Image.fromarray(src, mode='RGB')
+        img_gray = Image.fromarray(mask, mode='L')
+        x1 = line[0]
+        y1 = line[1]
+        x2 = line[2]
+        y2 = line[3]
+        draw = ImageDraw.Draw(img)
+        draw_gray = ImageDraw.Draw(img_gray)
+        draw.line((x1, y1, x2, y2), fill =rgb_to_hex(*color), outline =rgb_to_hex(*color))  
+        draw_gray.line((x1, y1, x2, y2), fill =value, outline =value)  
+        result = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
+        result_gray = np.array(img_gray.getdata(), np.uint8).reshape(img_gray.size[1], img_gray.size[0])
+        return result, result_gray
+    else:
+        return src, mask
 
 def save_matrix(M, filename='dump.txt'):
     np.savetxt(fname=filename, X=M, fmt="%d", delimiter=" ", newline='\n')
@@ -447,9 +481,11 @@ class Context:
         self.img_initimage = np.copy(self.original_image)
         self.img_initimage2 = np.copy(self.original_image)
         self.img_finalimage = np.copy(self.original_image)
+        self.img_undoimage = np.copy(self.original_image)
         self.polygon_layer = np.zeros_like(self.original_image)
         self.frozen_mask = np.zeros_like(self.original_image_gray)
         self.screen_mask = np.zeros_like(self.original_image_gray)
+        self.undo_mask = np.zeros_like(self.original_image_gray)
         self.spot_mask = get_spotmask(Context.DEFAULT_WIDTH)
         self.view_number = 0
         self.polygon =  [] # example: [(50, 50), (100, 50), (100, 100), (50, 100)]
@@ -475,6 +511,7 @@ class Context:
             self.original_image_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
             self.frozen_mask = np.zeros_like(self.original_image_gray)
             self.screen_mask = np.zeros_like(self.original_image_gray)
+            self.undo_mask = np.zeros_like(self.original_image_gray)
             return 1
         elif itype == 0:
             w_, h_ = img.shape
@@ -483,6 +520,7 @@ class Context:
             self.original_image_gray = img #cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
             self.frozen_mask = np.zeros_like(self.original_image_gray)
             self.screen_mask = np.zeros_like(self.original_image_gray)
+            self.undo_mask = np.zeros_like(self.original_image_gray)
             return 0
         else:
             return -1
@@ -501,6 +539,11 @@ class Main_Window:
     def __init__(self, ctx, default_class = CLASS_CODE):
         self.ctx = ctx
         cv2.namedWindow(self.WindowName, cv2.WINDOW_GUI_NORMAL)
+        root = tk.Tk()
+        center_x = int(root.winfo_screenwidth()/4)
+        center_y = int(root.winfo_screenheight()/4)
+        cv2.moveWindow(self.WindowName, center_x, center_y)
+        cv2.resizeWindow(self.WindowName, 2*center_x, 2*center_y)
         self.width = Context.DEFAULT_WIDTH
         self.class_idx = default_class
         cv2.createTrackbar("class#", self.WindowName,0, 255,Main_Window.nothing)
@@ -552,19 +595,6 @@ class Main_Window:
         print("window is closed")
 ctx = Context()
 
-def draw_mask_polygon(src, mask, polygon, value = CLASS_CODE, color = (0, 0, 255)):
-    if (len(polygon) > 2):
-        img = Image.fromarray(src, mode='RGB')
-        img_gray = Image.fromarray(mask, mode='L')
-        draw = ImageDraw.Draw(img)
-        draw_gray = ImageDraw.Draw(img_gray)
-        draw.polygon(polygon, fill =rgb_to_hex(*color), outline =rgb_to_hex(*color))  
-        draw_gray.polygon(polygon, fill =value, outline =value)  
-        result = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
-        result_gray = np.array(img_gray.getdata(), np.uint8).reshape(img_gray.size[1], img_gray.size[0])
-        return result, result_gray
-    else:
-        return src, mask
     
 class Controller:
     quit = False
@@ -703,6 +733,7 @@ def process_highgui(*args):
                     if (img_tmp is None):
                         raise Exception("Error of loading of image file")
                     ctx.original_image = img_tmp
+                    ctx.img_undoimage = copy.deepcopy(ctx.original_image)
                     ctx.original_name = zrec.zmq_orig_name
                     if (zrec.trigger):
                         zrec.trigger = False
@@ -716,11 +747,16 @@ def process_highgui(*args):
                             if (os.path.isfile(zrec.mask_name)):
                                 ctx.high_logger.info("start downloading mask image: %s", zrec.mask_name)
                                 tmpmask = load_image(zrec.mask_name)
-                                ctx.frozen_mask = cv2.cvtColor(tmpmask, cv2.COLOR_BGR2GRAY) 
+                                tmpmask = tmpmask.transpose(2,0,1)
+                                b, g, r = tmpmask
+                                ctx.frozen_mask = np.bitwise_or(b , g) 
+                                ctx.frozen_mask = np.bitwise_or(ctx.frozen_mask , r)
                                 ctx.screen_mask = np.zeros_like(ctx.frozen_mask)
+                                ctx.undo_mask = np.zeros_like(ctx.frozen_mask)
                             else:
                                 ctx.frozen_mask = np.zeros_like(ctx.original_image)
                                 ctx.screen_mask = np.zeros_like(ctx.frozen_mask)
+                                ctx.undo_mask = np.zeros_like(ctx.frozen_mask)
                                 ctx.high_logger.info("screen shape is: %s frozen shape is: %s", 
                                                     ctx.screen_mask.shape, 
                                                     ctx.frozen_mask.shape)
@@ -768,7 +804,9 @@ def draw_spot(*args):
     ctl = args[0]
     ctx = args[1]
     mwnd = args[2]
+    undo_done = False
     def _tool1():
+        nonlocal undo_done
         x_froz = int(mwnd.x_coord)
         y_froz = int(mwnd.y_coord)
         mwnd.set_title_busy(ctx.original_name)
@@ -776,6 +814,10 @@ def draw_spot(*args):
                                                 x_froz, y_froz)
         if (is_allowed):
             ctx.mutex.acquire()
+            if (not undo_done):
+                ctx.img_undoimage = copy.deepcopy(ctx.img_finalimage)
+                ctx.undo_mask = copy.deepcopy(ctx.screen_mask)
+                undo_done = True
             ctx.img_finalimage, ctx.screen_mask = highlight_spot(ctx.img_finalimage, 
                                             ctx.screen_mask, ctx.spot_mask, 
                                             x_froz, y_froz, 
@@ -785,8 +827,13 @@ def draw_spot(*args):
         ctl.trigger3 = True
         return
     def _tool2():
+        nonlocal undo_done
         mwnd.set_title_busy(ctx.original_name)
         ctx.mutex.acquire()
+        if (not undo_done):
+            ctx.img_undoimage = copy.deepcopy(ctx.img_finalimage)
+            ctx.undo_mask = copy.deepcopy(ctx.screen_mask)
+            undo_done = True
         ctx.img_finalimage, ctx.screen_mask = highlight_spot(ctx.img_finalimage, ctx.screen_mask, 
                                                 ctx.spot_mask, mwnd.x_coord, mwnd.y_coord, 
                                                 color = ctx.screenmaskcolor, value = mwnd.class_idx)
@@ -866,10 +913,13 @@ def draw_spot(*args):
             if (Main_Window.mouse_down):
                 if (not ctl.trigger_highgui): 
                     switch.get(mwnd.toolnumber, _default)()
+            else:
+                undo_done = False
     except Exception as inst:
         ctx.draw_logger.error("error: %s line: %s", 
                               inst.args, 
                               inst.__traceback__.tb_lineno)
+        ctx.draw_logger.critical(traceback.format_exc())
         ctl.quit = True
         logging.shutdown()
         os._exit(0)
@@ -929,6 +979,8 @@ def main_loop():
     def _draw_mask_polygon():
         ctx.main_logger.info('draw polygon is selected')
         mwnd.set_title_busy(ctx.original_name)
+        ctx.img_undoimage = copy.deepcopy(ctx.img_finalimage)
+        ctx.undo_mask = copy.deepcopy(ctx.screen_mask)
         ctx.img_finalimage, ctx.screen_mask = draw_mask_polygon(ctx.img_finalimage, 
                                                                 ctx.screen_mask, 
                                                                 ctx.polygon,
@@ -938,6 +990,7 @@ def main_loop():
         ctx.polygon_layer = np.zeros_like(ctx.original_image)
         new_title = ctx.original_name + " " + str(len(ctx.polygon))
         mwnd.set_title(new_title)
+        ctl.trigger3 = True
         return
     def _reset_polygon():
         ctx.main_logger.info('reset polygon is selected')
@@ -946,6 +999,27 @@ def main_loop():
         mwnd.set_title(new_title)
         ctx.polygon_layer = np.zeros_like(ctx.original_image)
         return
+    def _draw_mask_line():
+        ctx.main_logger.info('draw polygon is selected')
+        mwnd.set_title_busy(ctx.original_name)
+        ctx.img_undoimage = copy.deepcopy(ctx.img_finalimage)
+        ctx.undo_mask = copy.deepcopy(ctx.screen_mask)
+        ctx.img_finalimage, ctx.screen_mask = draw_mask_line(ctx.img_finalimage, 
+                                                                ctx.screen_mask, 
+                                                                ctx.polygon,
+                                                                mwnd.class_idx,
+                                                                ctx.screenmaskcolor)
+        ctx.polygon.clear()
+        ctx.polygon_layer = np.zeros_like(ctx.original_image)
+        new_title = ctx.original_name + " " + str(len(ctx.polygon))
+        mwnd.set_title(new_title)
+        ctl.trigger3 = True
+        return
+    def _undo_mask():
+        ctx.main_logger.info('undo last action')
+        ctx.img_finalimage = copy.deepcopy(ctx.img_undoimage)
+        ctx.screen_mask = copy.deepcopy(ctx.undo_mask)
+        ctl.trigger3 = True
     def _cursor_shift():
         ctx.main_logger.info('cursor shift is selected')
         old_k2x = Main_Window.k2xy[Main_Window.cursor_state][0] 
@@ -997,8 +1071,10 @@ def main_loop():
             ord('f'): _save_mask,
             ord('p'): _draw_mask_polygon,
             ord('r'): _reset_masks,
+            ord('l'): _draw_mask_line,
             ord('o'): _reset_polygon,
             ord('m'): _cursor_shift,
+            ord('u'): _undo_mask,
             ord('h'): _help,
             #ord('q'):  _exit_app,
             27: _exit_app
@@ -1013,6 +1089,8 @@ def main_loop():
         logging.critical("error durring application initialization: %s line: %s", 
                          inst.args, 
                          inst.__traceback__.tb_lineno)
+        logger.critical(traceback.format_exc())
+
     except:
         logging.critical("error durring logging initialization")
         return
@@ -1022,6 +1100,7 @@ def main_loop():
             mwnd.oldwidth = mwnd.width
             ctx.spot_mask = get_spotmask(mwnd.width, mwnd.class_idx)
             circle_mask = get_circlemask(mwnd.width)
+            ctx.main_logger.info('change width is selected. new is: %s', mwnd.width)
         if (mwnd.class_idx != mwnd.old_fidx):
             ctx.main_logger.info('change class is selected. new is: %s', mwnd.class_idx)
             mwnd.old_fidx = mwnd.class_idx

@@ -210,8 +210,8 @@ ApplicationWindow {
             }
         } //ColumnLayout
         Component.onCompleted: {
-            x: Screen.desktopAvailableWidth - width
-            y: Screen.desktopAvailableHeight/2 - height/2
+            mainapp.x = Screen.desktopAvailableWidth - width
+            mainapp.y = Screen.desktopAvailableHeight/2 - height/2
             if (QT_DEBUG === false) {
                 togglepanel.toggle_im = true
                 Tipcagent.sig_bindSocket()
