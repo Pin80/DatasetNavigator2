@@ -1,5 +1,5 @@
 # DatasetNavigator
-![alt text](https://github.com/Pin80/DatasetNavigator/blob/master/screenshot.png?raw=true)
+![alt text](https://github.com/Pin80/DatasetNavigator2/blob/master/screenshot.png?raw=true)
 это небольшая утилита для создании масок изображений датасета для сегментации  
 Написана на c++, Python. Использует QML, zeroMQ   
 Приложение кроссплатформенное(по идеи), но проверено только под Linux. 
