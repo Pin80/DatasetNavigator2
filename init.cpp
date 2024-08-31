@@ -1,4 +1,7 @@
 #include "init.h"
+#ifdef Q_OS_LINUX
+#include <sys/sysinfo.h>
+#endif
 
 QScopedPointer<QFile>   m_logFile;
 TInit initstruct;
@@ -45,8 +48,40 @@ QObject* getInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
     return inst;
 }
 
-bool init(QQmlApplicationEngine& _engine)
+bool log_process()
 {
+    const char * logfname = "datasetnavigator.log";
+    QFileInfo logInfo;
+    logInfo.setFile(logfname);
+    // simple log rotation
+    if (logInfo.exists())
+    {
+        QDir directory("");
+        QDateTime current = QDateTime::currentDateTime();
+        QDateTime created = logInfo.created();
+        int days = created.daysTo(current);
+        if (days > 0)
+        {
+            QStringList logs = directory.entryList(QStringList() << "*.log" ,QDir::Files);
+            foreach(QString filename, logs)
+            {
+                if ((filename.contains(logfname)) && (filename.size() > QString(logfname).size()))
+                {
+                    directory.remove(filename);
+                }
+            }
+            QString newname = logInfo.baseName() + "_" + created.toString("dd.MM.yyyy") + "." + logInfo.completeSuffix();
+            QFile::rename(logfname, newname);
+        }
+    }
+    m_logFile.reset(new QFile(logfname));
+    m_logFile.data()->open(QFile::Append | QFile::Text);
+    return (m_logFile->isOpen());
+}
+
+bool init(QQmlApplicationEngine& _engine, const QUrl _url)
+{
+
     QJsonValue value = initstruct.broker->getSettings().value("zmqurlpc");
     QString urlpc = value.toString();
     if (urlpc.isEmpty())
@@ -90,6 +125,9 @@ bool init(QQmlApplicationEngine& _engine)
     initstruct.mprov.reset( new ColorImageProvider(initstruct.broker.get()));
     QObject::connect(initstruct.broker.get(), SIGNAL(mfldChanged(QString)),
                      initstruct.mprov.get(), SLOT(onFolderName(QString)));
+
+    // by default
+    _engine.setObjectOwnership(initstruct.prov.get(), QQmlEngine::JavaScriptOwnership);
     _engine.addImageProvider( QLatin1String("colors"), initstruct.prov.release() );
     _engine.addImageProvider( QLatin1String("mcolors"), initstruct.mprov.release() );
     (void)qmlRegisterSingletonType<TZMQIPC>("ipc.zmq", 1, 0,
@@ -102,7 +140,7 @@ bool init(QQmlApplicationEngine& _engine)
     #else
     _engine.rootContext()->setContextProperty("QT_DEBUG", QVariant(false));
     #endif // QT_DEBUG
-    _engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
+    _engine.load(_url);
     if (_engine.rootObjects().isEmpty())
         return false;
     QObject::connect(initstruct.pyprocess.get(),
@@ -112,3 +150,21 @@ bool init(QQmlApplicationEngine& _engine)
     return true;
 }
 
+
+void write_mem_info()
+{
+    #ifdef Q_OS_LINUX
+    struct sysinfo memInfo;
+    sysinfo (&memInfo);
+    long long int physMemUsed = memInfo.totalram - memInfo.freeram;
+    physMemUsed *= memInfo.mem_unit;
+    qInfo() << "totalRam:" << (long long int)(memInfo.totalram * memInfo.mem_unit / 1024 / 1024);
+    qInfo() << "freeRam:" << (long long int)(memInfo.freeram * memInfo.mem_unit / 1024 / 1024);
+    qInfo() << "sharedRam:" << (long long int)memInfo.sharedram * memInfo.mem_unit / 1024 / 1024;
+    qInfo() << "bufferRam:" << (long long int)memInfo.bufferram * memInfo.mem_unit / 1024 / 1024;
+    qInfo() << "totalSwap:" << (long long int)memInfo.totalswap * memInfo.mem_unit / 1024 / 1024;
+    qInfo() << "freeSwap" << (long long int)memInfo.freeswap * memInfo.mem_unit / 1024 / 1024;
+    qInfo() << "totalHigh:" << (long long int)memInfo.totalhigh * memInfo.mem_unit / 1024 / 1024;
+    qInfo() << "freeHigh:" << (long long int)memInfo.freehigh * memInfo.mem_unit / 1024 / 1024;
+    #endif
+}

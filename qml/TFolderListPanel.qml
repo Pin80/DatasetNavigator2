@@ -157,8 +157,8 @@ Item {
                             imgdialog.show()
                         }
                         onCvtNames: {
-                            Tipcagent.convertImageFiles();
                             indicon();
+                            Tipcagent.convertImageFiles();
                         }
                         onReindexNames: {
                             cvtdialog.open()
@@ -173,6 +173,7 @@ Item {
                         }
                         onSendMessage: {
                                 if (typeof maskmodel !== "undefined") {
+                                    indicon();
                                     var res = Tipcagent.sendString(delegfname,
                                                          modelfolder,
                                                          maskmodel.folder,
@@ -180,7 +181,6 @@ Item {
                                     if (!res)
                                         messageDialog_notsend.open()
                                 }
-                                indicon();
                         }
 
                         MouseArea {

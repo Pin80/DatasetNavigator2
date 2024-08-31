@@ -21,6 +21,7 @@ ApplicationWindow {
     onClosing: {
         Tipcagent.closeWindow()
     }
+
     Image {
         anchors.fill: parent
         fillMode: Image.Tile
@@ -178,6 +179,7 @@ ApplicationWindow {
                     Connections {
                         target: Tipcagent
                         onSentString :{
+                            console.log("feedback for sent string:", result)
                             popupwnd.pactivate = false
                         }
                     }
@@ -222,7 +224,7 @@ ApplicationWindow {
             urlfolder = Tipcagent.maskfolder
             fldbtnpanel.panel_maskfolder = urlfolder
             console.log("default mfolder:", urlfolder )
-
         }
     }
+
 } //ApplicationWindow

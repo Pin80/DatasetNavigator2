@@ -12,61 +12,9 @@ CONFIG += staticlib
 DEFINES += QT_DEPRECATED_WARNINGS
 
 
-# You can also make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+TEMPLATE = subdirs
+SUBDIRS += \
+    Tests/test_ds1 \
+    app.pro
 
-SOURCES += \
-        broker.cpp \
-        fileconverter.cpp \
-        init.cpp \
-        main.cpp \
-        qmlback.cpp \
-        zmqtopy.cpp
 
-RESOURCES += \
-    qml.qrc
-
-# Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH += "/home/user/MySoftware/DatasetNavigator2/qml"
-# Additional import path used to resolve QML modules just for Qt Quick Designer
-QML_DESIGNER_IMPORT_PATH =
-CONFIG += c++11
-#/home/user/MySoftware/DatasetNavigator2/thirdparty/
-unix {
-    ZPATHBIN = "/opt/zeromq/only_bin/lib"
-    ZPATHINC = "$$_PRO_FILE_PWD_/thirdparty/"
-    INCLUDEPATH += "/opt/zeromq/only_bin/includes/"
-    message($$ZPATHINC)
-    INCLUDEPATH += $$ZPATHINC
-    LIBS += $$ZPATHBIN/libzmq.a
-    LIBS += $$ZPATHBIN/libczmq.a
-    LIBS += -lpthread
-    DEFINES += _GLIBCXX_USE_NANOSLEEP
-    target.path = /usr/lib
-    INSTALLS += target
-    #ZPATH = "/usr/lib/x86_64-linux-gnu"
-}
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
-HEADERS += \
-    broker.h \
-    fileconverter.h \
-    init.h \
-    qmlback.h \
-    zmqtopy.h
-
-DISTFILES += \
-    README.md \
-    TODO \
-    create_copy_to_res_in_build_dir.sh \
-    doc/manual.html \
-    draft.txt \
-    license.txt \
-    settings.json \
-    zmq_mask_tool.ipynb

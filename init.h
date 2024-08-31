@@ -4,13 +4,15 @@
 #include <QErrorMessage>
 #include "qmlback.h"
 #include "zmqtopy.h"
-#include <fileconverter.h>
+#include "fileconverter.h"
+
 
 void messageHandler(QtMsgType type,
                     const QMessageLogContext &context,
                     const QString &msg);
-
-bool init(QQmlApplicationEngine& _engine);
+bool log_process();
+void write_mem_info();
+bool init(QQmlApplicationEngine& _engine, const QUrl _url);
 
 struct TInit
 {

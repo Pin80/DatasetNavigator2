@@ -108,7 +108,6 @@ bool TZMQIPC::sendString(const QString& fname,
         QString fullname = newpath + "/" + fname + "*" + maskname;
         const char * tmpstr = fullname.toUtf8().data();
         emit sig_sendString(fullname);
-        qDebug() << "send:" << fullname;
         return true;
 }
 

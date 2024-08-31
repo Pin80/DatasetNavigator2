@@ -394,18 +394,18 @@ def draw_mask_polygon(src, mask, polygon, value = CLASS_CODE, color = (0, 0, 255
     else:
         return src, mask
 
-def draw_mask_line(src, mask, line, value = CLASS_CODE, color = (0, 0, 255)):
-    if (len(polygon) > 2):
+def draw_mask_line(src, mask, line, width, value = CLASS_CODE, color = (0, 0, 255)):
+    if (len(line) > 1):
         img = Image.fromarray(src, mode='RGB')
         img_gray = Image.fromarray(mask, mode='L')
-        x1 = line[0]
-        y1 = line[1]
-        x2 = line[2]
-        y2 = line[3]
+        x1 = line[0][0]
+        y1 = line[0][1]
+        x2 = line[1][0]
+        y2 = line[1][1]
         draw = ImageDraw.Draw(img)
         draw_gray = ImageDraw.Draw(img_gray)
-        draw.line((x1, y1, x2, y2), fill =rgb_to_hex(*color), outline =rgb_to_hex(*color))  
-        draw_gray.line((x1, y1, x2, y2), fill =value, outline =value)  
+        draw.line((x1, y1, x2, y2), fill =rgb_to_hex(*color), width = width)  
+        draw_gray.line((x1, y1, x2, y2), fill =value, width = 1)  
         result = np.array(img.getdata(), np.uint8).reshape(img.size[1], img.size[0], 3)
         result_gray = np.array(img_gray.getdata(), np.uint8).reshape(img_gray.size[1], img_gray.size[0])
         return result, result_gray
@@ -1000,13 +1000,14 @@ def main_loop():
         ctx.polygon_layer = np.zeros_like(ctx.original_image)
         return
     def _draw_mask_line():
-        ctx.main_logger.info('draw polygon is selected')
+        ctx.main_logger.info('draw line is selected')
         mwnd.set_title_busy(ctx.original_name)
         ctx.img_undoimage = copy.deepcopy(ctx.img_finalimage)
         ctx.undo_mask = copy.deepcopy(ctx.screen_mask)
         ctx.img_finalimage, ctx.screen_mask = draw_mask_line(ctx.img_finalimage, 
                                                                 ctx.screen_mask, 
                                                                 ctx.polygon,
+                                                                mwnd.width,
                                                                 mwnd.class_idx,
                                                                 ctx.screenmaskcolor)
         ctx.polygon.clear()

@@ -10,7 +10,7 @@
 #include <QJsonDocument>
 #include <QFileInfo>
 #include <QRegularExpression>
-#include <broker.h>
+#include "broker.h"
 
 class TConverter: public QObject
 {

@@ -1,8 +1,14 @@
 #include <iostream>
 #include <QtGlobal>
 #include <QIcon>
-#include "init.h"
 #include <QApplication>
+#include <QLoggingCategory>
+#include "init.h"
+
+Q_LOGGING_CATEGORY(lcGcStats, "qt.qml.gc.statistics")
+Q_DECLARE_LOGGING_CATEGORY(lcGcStats)
+Q_LOGGING_CATEGORY(lcGcAllocatorStats, "qt.qml.gc.allocatorStats")
+Q_DECLARE_LOGGING_CATEGORY(lcGcAllocatorStats)
 
 int main(int argc, char *argv[])
 {
@@ -10,37 +16,11 @@ int main(int argc, char *argv[])
     {
         Q_UNUSED(argc)
         Q_UNUSED(argv)
-        const char * logfname = "datasetnavigator.log";
         QCoreApplication::setOrganizationName("Some organization");
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QApplication app(argc, argv);
-        QFileInfo logInfo;
-        logInfo.setFile(logfname);
-        // simple log rotation
-        if (logInfo.exists())
-        {
-            QDir directory("");
-            QDateTime current = QDateTime::currentDateTime();
-            QDateTime created = logInfo.created();
-            int days = created.daysTo(current);
-            if (days > 0)
-            {
-                QStringList logs = directory.entryList(QStringList() << "*.log" ,QDir::Files);
-                foreach(QString filename, logs)
-                {
-                    if ((filename.contains(logfname)) && (filename.size() > QString(logfname).size()))
-                    {
-                        directory.remove(filename);
-                    }
-                }
-                QString newname = created.toString() + "_" + logfname;
-                QFile::rename(logfname, newname);
-            }
-        }
 
-        m_logFile.reset(new QFile(logfname));
-        m_logFile.data()->open(QFile::Append | QFile::Text);
-        if (!m_logFile->isOpen())
+        if (!log_process())
         {
             std::cerr << "i/o operation error" << std::endl;
             return -1;
@@ -62,7 +42,7 @@ int main(int argc, char *argv[])
         {
             qWarning() << "ZMQ version is not fully mathced. ZMQ library may be not fully compitable";
         }
-
+        write_mem_info();
         // Под Gnome не работает
         app.setWindowIcon(QIcon("./images/favicon.png"));
 
@@ -72,25 +52,42 @@ int main(int argc, char *argv[])
             //initstruct.broker->stop();
             //return -1;
             QQmlApplicationEngine engine(&app);
-            if (!init(engine))
+            const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
+            QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                             &app, [url](QObject *obj, const QUrl &objUrl)
+            {
+                if (!obj && url == objUrl)
+                {
+                    initstruct.broker->stop();
+                    QCoreApplication::exit(-1);
+                }
+            }, Qt::QueuedConnection);
+            if (!init(engine, url))
             {
                 std::cout << "exit" << std::endl;
                 initstruct.broker->stop();
                 return -1;
             }
+
             result = app.exec();
-            //initstruct.broker->stop();
+            initstruct.broker->stop();
             //return result;
-            initstruct.zbackend->terminateZMQ_pool();
-            initstruct.zbackend.reset(nullptr);
+            if (initstruct.zbackend)
+            {
+                initstruct.zbackend->terminateZMQ_pool();
+                initstruct.zbackend.reset(nullptr);
+            }
         }
-        if (initstruct.pyprocess->state() == QProcess::ProcessState::Running)
+        if (initstruct.pyprocess)
         {
-            QByteArray ar("q");
-            initstruct.pyprocess->write(ar);
-            initstruct.pyprocess->waitForBytesWritten(3000);
-            initstruct.pyprocess->closeWriteChannel();
-            initstruct.pyprocess->waitForFinished(1000);
+            if (initstruct.pyprocess->state() == QProcess::ProcessState::Running)
+            {
+                QByteArray ar("q");
+                initstruct.pyprocess->write(ar);
+                initstruct.pyprocess->waitForBytesWritten(3000);
+                initstruct.pyprocess->closeWriteChannel();
+                initstruct.pyprocess->waitForFinished(1000);
+            }
         }
         initstruct.broker.reset();
         qInfo() << "DN Application is terminated";

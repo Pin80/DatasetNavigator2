@@ -19,7 +19,7 @@
 #include <QQmlContext>
 
 #include "broker.h"
-#include <fileconverter.h>
+#include "fileconverter.h"
 
 class ColorImageProvider : public QObject, public QQuickImageProvider
 {
