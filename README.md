@@ -4,9 +4,8 @@
 Написана на c++, Python. Использует QML, zeroMQ   
 Приложение кроссплатформенное(по идеи), но проверено только под Linux. 
 
-<iframe width="920" height="450" src="//rutube.ru/video/cd10fc06784e4c47be770fda2be78e9c" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowfullscreen>
-        
-</iframe>
+<iframe width="920" height="450" src="//rutube.ru/video/cd10fc06784e4c47be770fda2be78e9c" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowfullscreen> </iframe>
+[![IMAGE ALT TEXT HERE](https://rutube.ru/video/cd10fc06784e4c47be770fda2be78e9c)](https://rutube.ru/video/cd10fc06784e4c47be770fda2be78e9c/)
 
 Рекомендуемое разрешение экрана 1920х1080,   
 но может корректно работать на более низком разрешении, вплоть до 800х600  
